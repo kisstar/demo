@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>视差滚动-固定背景</title>
-    <link
-      rel="shortcut icon"
-      type="image/x-icon"
-      href="/parallax/favicon.ico"
-    />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <style>
       * {
         margin: 0;
@@ -33,15 +29,15 @@
       }
 
       .parallax-item:nth-child(1) {
-        background-image: url(images/evie-s-xy.jpg);
-      }
-
-      .parallax-item:nth-child(3) {
-        background-image: url(images/evie-s-kq.jpg);
+        background-image: url(../images/evie-s-xy.jpg);
       }
 
       .parallax-item:nth-child(2) {
         background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+      }
+
+      .parallax-item:nth-child(3) {
+        background-image: url(../images/evie-s-kq.jpg);
       }
 
       .parallax-item:nth-child(4) {
@@ -51,13 +47,11 @@
   </head>
 
   <body>
-    <main>
-      <div class="parallax-container">
-        <div class="parallax-item">1</div>
-        <div class="parallax-item">2</div>
-        <div class="parallax-item">3</div>
-        <div class="parallax-item">4</div>
-      </div>
+    <main class="parallax-container">
+      <section class="parallax-item">1</section>
+      <section class="parallax-item">2</section>
+      <section class="parallax-item">3</section>
+      <section class="parallax-item">4</section>
     </main>
   </body>
 </html>
