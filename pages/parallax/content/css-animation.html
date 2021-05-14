@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>视差滚动-综合示例</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .sky {
+        position: absolute;
+        z-index: 999;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        animation-name: dark;
+        animation-duration: 10s;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes dark {
+        0% {
+          background: rgba(0, 0, 0, 0);
+        }
+
+        100% {
+          background: rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      .item-top {
+        height: 71%;
+        background-image: url('../images/background-top.jpg');
+        background-size: 100% 100%;
+      }
+
+      .item-middle {
+        position: relative;
+        height: 13%;
+        background-image: url('../images/background-middle.jpg');
+        background-size: 100% 100%;
+      }
+
+      .item-bottom {
+        position: relative;
+        height: 16%;
+        background-image: url('../images/background-bottom.jpg');
+        background-size: 100% 100%;
+      }
+
+      .sun {
+        position: absolute;
+        right: 40%;
+        width: 200px;
+        height: 200px;
+        background: url('../images/sun.png');
+        background-size: 100% 100%;
+        animation-name: sunset;
+        animation-duration: 30s;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes sunset {
+        0% {
+          opacity: 1;
+          transform: translateX(0) translateY(0) scale(1);
+        }
+
+        100% {
+          opacity: 0;
+          transform: translateX(-2000px) translateY(400px) scale(0);
+        }
+      }
+
+      .cloud-one {
+        position: absolute;
+        left: -65px;
+        width: 130px;
+        height: 126px;
+        background: url('../images/cloud-one.png');
+        background-size: 100% 100%;
+        animation-name: cloudOne, cloudFade;
+        animation-duration: 60s, 10s;
+        animation-iteration-count: infinite, 1;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes cloudOne {
+        0% {
+          left: -65px;
+        }
+
+        100% {
+          left: 100%;
+        }
+      }
+
+      @keyframes cloudFade {
+        0% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .cloud-two {
+        position: absolute;
+        right: -150px;
+        width: 300px;
+        height: 140px;
+        background: url('../images/cloud-two.png');
+        animation-name: cloudTwo, cloudFade;
+        animation-duration: 30s, 10s;
+        animation-iteration-count: infinite, 1;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes cloudTwo {
+        0% {
+          right: -5%;
+        }
+
+        100% {
+          right: 100%;
+        }
+      }
+
+      .bird {
+        position: absolute;
+        top: 180px; /* 比云低 */
+        right: -91px;
+        width: 91px;
+        height: 71px;
+        background: url('../images/bird.png') -182px 0px no-repeat;
+        animation-name: birdFlight, birdMove, birdFate;
+        animation-duration: 400ms, 10s, 20s;
+        animation-timing-function: step-start, ease-in, ease;
+        animation-iteration-count: infinite, 1, 1;
+      }
+
+      @keyframes birdFlight {
+        0% {
+          background-position: -182px 0px;
+        }
+
+        50% {
+          background-position: 0px 0px;
+        }
+
+        75% {
+          background-position: -91px 0px;
+        }
+
+        100% {
+          background-position: -182px 0px;
+        }
+      }
+
+      @keyframes birdMove {
+        0% {
+          right: -91px;
+        }
+
+        100% {
+          right: 100%;
+        }
+      }
+
+      @keyframes birdFate {
+        0% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .boy {
+        position: absolute;
+        bottom: 0;
+        left: 6%;
+        width: 151px;
+        height: 291px;
+        background: url('../images/boy.png') -0px -291px no-repeat;
+        animation-name: boyWalk, boyMove;
+        animation-duration: 950ms, 60s;
+        animation-iteration-count: infinite, 1;
+        animation-timing-function: steps(1, start), ease-out;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes boyWalk {
+        0% {
+          background-position: -0px -291px;
+        }
+
+        25% {
+          background-position: -602px -0px;
+        }
+
+        50% {
+          background-position: -302px -291px;
+        }
+
+        75% {
+          ackground-position: -151px -291px;
+        }
+
+        100% {
+          background-position: -0px -291px;
+        }
+      }
+
+      @keyframes boyMove {
+        0% {
+          left: 6%;
+        }
+
+        100% {
+          left: 100%;
+        }
+      }
+
+      .text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-style: italic;
+        color: #fff;
+        opacity: 0;
+        animation-name: textFate;
+        animation-delay: 10s;
+        animation-duration: 3s;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes textFate {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="container">
+      <section class="item-top">
+        <div class="sky"></div>
+        <div class="sun"></div>
+        <div class="cloud-one"></div>
+        <div class="cloud-two"></div>
+        <div class="bird"></div>
+      </section>
+      <section class="item-middle">
+        <div class="boy"></div>
+      </section>
+      <section class="item-bottom">
+        <div class="text">The End ^_^</div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>视差滚动</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100vh;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body class="container">
+    <div class="text-center my-5">
+      <h2 class="mb-3">视差滚动</h2>
+      <p>
+        视差滚动（Parallax
+        Scrolling）是指让多层背景以不同的速度移动，形成立体的运动效果。常见的实现方式包括：固定背景、绝对定位和滚动事件。
+      </p>
+    </div>
+    <main role="main">
+      <div class="text-center">
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <a href="content/bg.html" class="btn btn-primary">固定背景</a>
+          <a href="content/fixed.html" class="btn btn-primary">绝对定位</a>
+          <a href="content/transform.html" class="btn btn-primary">
+            CSS3 3D 转换
+          </a>
+          <a href="content/event.html" class="btn btn-primary">滚动事件</a>
+          <a href="content/css-animation.html" class="btn btn-primary">
+            纯 CSS 动画
+          </a>
+        </div>
+      </div>
+    </main>
+    <footer class="my-5 text-center text-muted">
+      The website created by <a href="https://github.com/kisstar">Dwh</a>, more
+      than a coder, more than a designer.
+    </footer>
+  </body>
+</html>
