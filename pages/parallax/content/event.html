@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>视差滚动-Scroll 事件</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico" />
     <style>
       * {
         margin: 0;
@@ -71,9 +71,9 @@
       function throttle(fn) {
         let ticking = false;
 
-        return function (e) {
+        return function(e) {
           if (!ticking) {
-            requestAnimationFrame(function () {
+            requestAnimationFrame(function() {
               fn(e);
               ticking = false;
             });
