@@ -1,0 +1,10 @@
+
+YUV 文件转码：
+ffmpeg -i input.mp4 -an -c:v rawvideo -pix_fmt yuv420p out.yuv
+YUV 文件播放：
+ffplay -f rawvideo -video_size 740x416 -pix_fmt yuv420p come-here.yuv
+
+PCM 文件转码：
+ffmpeg -i input.mp4 -vn -ar 44100 -ac 2 -f s16le out.pcm
+PCM 文件播放：
+ffplay -ac 2 -ar 44100 -f s16le come-here.pcm
