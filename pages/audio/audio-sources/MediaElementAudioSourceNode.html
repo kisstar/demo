@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediaElementAudioSourceNode</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <p class="pt-5">
+      通过 Audio
+      标签的播放和暂停控件可以控制音频数据的输入，当开始输入数据后可以通过控制
+      AudioContext 中时间进程的恢复和暂停来控制音乐的播放和暂停。
+    </p>
+    <audio
+      controls
+      src="../../public/audio/the-degenerate_v5_1920x798.mp3"
+    ></audio>
+    <div class="mt-2">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button id="resume" class="btn btn-primary">恢复（默认）</button>
+        <button id="suspend" class="btn btn-primary">暂停</button>
+      </div>
+      <p class="alert alert-warning fs-6 text-muted mt-2">
+        虽然在 AudioContext
+        创建后默认是运行状态，但是如果用户没有和网页交互过的话无法自动开始。
+      </p>
+    </div>
+    <script>
+      const audioEl = document.querySelector('audio');
+      // Create an audio-processing graph built from audio modules linked together
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Create an audio source consisting of an HTML <audio> or <video> element
+      const audioSource = new MediaElementAudioSourceNode(audioCtx, {
+        mediaElement: audioEl
+      });
+      // Equal to:
+      // const audioSource = audioCtx.createMediaElementSource(audioEl);
+
+      // Connect the AudioBufferSourceNode to the destination
+      audioSource.connect(audioCtx.destination);
+    </script>
+    <script>
+      document.querySelector('#resume').addEventListener('click', function() {
+        audioCtx.resume();
+      });
+      document.querySelector('#suspend').addEventListener('click', function() {
+        audioCtx.suspend();
+      });
+    </script>
+  </body>
+</html>
