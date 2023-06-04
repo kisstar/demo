@@ -13,7 +13,11 @@
         const menuList = [
           {
             name: 'Hello WebGPU',
-            target: 'hello-webgpu',
+            target: 'hello',
+          },
+          {
+            name: 'Basice Triangle',
+            target: 'basic-triangle',
           },
         ];
         const presetStr = `<div class="menu">
@@ -41,7 +45,7 @@
         for (let page of pages) {
           page.addEventListener('click', () => {
             window.location.hash = page.target;
-            iframe.src = './pages/' + page.target + '.html';
+            iframe.src = './pages/gpu/' + page.target + '.html';
             document.querySelector('.active').classList.remove('active');
             page.classList.add('active');
           });
