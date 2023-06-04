@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGPU Samples</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <script>
+      function initHTMLContent() {
+        const menuList = [
+          {
+            name: 'Hello WebGPU',
+            target: 'hello-webgpu',
+          },
+        ];
+        const presetStr = `<div class="menu">
+          <h3>WebGPU Samples</h3>
+          <a href="https://github.com/kisstar/demo" target="_blank"> Github </a>
+          <hr />`;
+        const centerStr = menuList.reduce((pre, { name, target }) => {
+          return pre + `<a class="page" target="${target}">${name}</a>`;
+        }, '');
+        const postStr = `</div>
+          <iframe></iframe>
+          <a class="entry" target="_blank"></a>`;
+        const domStr = presetStr + centerStr + postStr;
+        const containerEl = document.createElement('div');
+
+        containerEl.classList.add('container');
+        containerEl.innerHTML = domStr;
+        document.querySelector('body')?.appendChild(containerEl);
+      }
+
+      function handlePageClick() {
+        const iframe = document.querySelector('iframe');
+        const pages = document.querySelectorAll('.page');
+
+        for (let page of pages) {
+          page.addEventListener('click', () => {
+            window.location.hash = page.target;
+            iframe.src = './pages/' + page.target + '.html';
+            document.querySelector('.active').classList.remove('active');
+            page.classList.add('active');
+          });
+        }
+      }
+
+      function handleHash() {
+        if (window.location.hash) {
+          const defaultPage = document.querySelector(
+            `[target=${window.location.hash.slice(1)}]`
+          );
+
+          defaultPage.classList.add('active');
+          defaultPage.click();
+        } else {
+          const defaultPage = document.querySelector('.page');
+
+          defaultPage.classList.add('active');
+          defaultPage.click();
+        }
+      }
+
+      initHTMLContent();
+      handlePageClick();
+      handleHash();
+    </script>
+  </body>
+</html>
