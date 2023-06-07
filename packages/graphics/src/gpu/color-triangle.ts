@@ -28,6 +28,24 @@ const initWebGPU = async () => {
 };
 
 const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
+  const vertex = new Float32Array([
+    0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.5, -0.5, 0.0,
+  ]);
+  const vertexBuffer = device.createBuffer({
+    size: vertex.byteLength,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
+
+  device.queue.writeBuffer(vertexBuffer, 0, vertex);
+
+  const frag = new Float32Array([1.0, 0.0, 0.0, 1.0]);
+  const fragBuffer = device.createBuffer({
+    size: frag.byteLength,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  device.queue.writeBuffer(fragBuffer, 0, frag);
+
   const vertexShader = device.createShaderModule({
     code: vertexCode,
   });
@@ -38,6 +56,23 @@ const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
     vertex: {
       module: vertexShader,
       entryPoint: 'main',
+      // 顶点数据的个数和信息，数量与后续的 setVertexBuffer 保持一致
+      buffers: [
+        {
+          // 每个顶点数据以多大进行切分（这里以数组中的 3 项描述一个顶点，每项占 4 个字节）
+          arrayStride: 4 * 3,
+
+          // 切分出来的 array 如何对应 shader 里的参数
+          // 把一行的 3 个点直接当做一个参数传入 shader
+          attributes: [
+            {
+              shaderLocation: 0, // 传递给 shader 的 @location(0) 这个变量
+              offset: 0,
+              format: 'float32x3', // 标识参数的长度大小
+            },
+          ],
+        },
+      ],
     },
     fragment: {
       module: fragShader,
@@ -56,14 +91,40 @@ const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
     layout: 'auto',
   });
 
-  return { pipeline };
+  const group = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(0), // 对应绑定到 pipeline 的位置布局
+    // 指定每个资源的绑定位置，目前一个 group 最多绑定 8 个资源
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: fragBuffer,
+        },
+      },
+    ],
+  });
+
+  const vertexInfo = {
+    vertex,
+    vertexBuffer,
+    vertexCount: 3,
+  };
+  const fragInfo = {
+    frag,
+    fragBuffer,
+    group,
+  };
+
+  return { pipeline, vertexInfo, fragInfo };
 };
 
 // WebGPU 采用 commandEncoder 的机制，提前把命令写入 encoder 中，一次性提交给 Native 运行
 const draw = async (
   device: GPUDevice,
   pipeline: GPURenderPipeline,
-  ctx: GPUCanvasContext
+  ctx: GPUCanvasContext,
+  vertexInfo: VertexInfo,
+  fragInfo: FragInfo
 ) => {
   const encoder = device.createCommandEncoder();
 
@@ -84,8 +145,10 @@ const draw = async (
   });
 
   renderPass.setPipeline(pipeline);
+  renderPass.setVertexBuffer(0, vertexInfo.vertexBuffer);
+  renderPass.setBindGroup(0, fragInfo.group);
   // 用多少个线程去运行 vertexShader
-  renderPass.draw(3);
+  renderPass.draw(vertexInfo.vertexCount);
   renderPass.end(); // 结束该绘制通道的录制
 
   const buffer = encoder.finish();
@@ -95,10 +158,49 @@ const draw = async (
 
 const main = async () => {
   const { device, format, ctx } = await initWebGPU();
-  const { pipeline } = await initPipeline(device, format);
+  const { pipeline, vertexInfo, fragInfo } = await initPipeline(device, format);
 
   // WebGL 同步绘制，但 WebGPU 提交命令后就不会等待绘制结果，而是将结果直接绘制到屏幕上
-  draw(device, pipeline, ctx);
+  draw(device, pipeline, ctx, vertexInfo, fragInfo);
+
+  const { vertex, vertexBuffer } = vertexInfo;
+  const { frag, fragBuffer } = fragInfo;
+
+  document
+    .querySelector<HTMLInputElement>('input[type="range"]')
+    ?.addEventListener('input', function () {
+      const { value } = this;
+
+      vertex[0] = +value;
+      vertex[3] = -0.5 + +value;
+      vertex[6] = 0.5 + +value;
+
+      device.queue.writeBuffer(vertexBuffer, 0, vertex);
+      draw(device, pipeline, ctx, vertexInfo, fragInfo);
+    });
+  document
+    .querySelector<HTMLInputElement>('input[type="color"]')
+    ?.addEventListener('input', function () {
+      const { value: hexColor } = this;
+      frag[0] = +`0x${hexColor.slice(1, 3)}` / 255;
+      frag[1] = +`0x${hexColor.slice(3, 5)}` / 255;
+      frag[2] = +`0x${hexColor.slice(5)}` / 255;
+
+      device.queue.writeBuffer(fragBuffer, 0, frag);
+      draw(device, pipeline, ctx, vertexInfo, fragInfo);
+    });
 };
 
 main();
+
+interface VertexInfo {
+  vertex: Float32Array;
+  vertexBuffer: GPUBuffer;
+  vertexCount: number;
+}
+
+interface FragInfo {
+  frag: Float32Array;
+  fragBuffer: GPUBuffer;
+  group: GPUBindGroup;
+}
