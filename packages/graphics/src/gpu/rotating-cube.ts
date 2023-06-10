@@ -18,9 +18,16 @@ const initWebGPU = async () => {
     throw new Error("Couldn't get GPUCanvasContext.");
   }
 
+  const { devicePixelRatio = 1 } = window;
+  const width = canvas.clientWidth * devicePixelRatio;
+  const height = canvas.clientHeight * devicePixelRatio;
+
+  canvas.width = width;
+  canvas.height = height;
+
   const sizeInfo = {
-    with: canvas.width,
-    height: canvas.height,
+    width,
+    height,
   };
   // 获取颜色格式，默认为 bgra8unorm: 0-255 的 rgba 格式，但数值范围都在 0-1
   const format = navigator.gpu.getPreferredCanvasFormat();
@@ -110,10 +117,7 @@ const initPipeline = async (
   });
 
   const depthTexture = device.createTexture({
-    size: {
-      width: sizeInfo.with,
-      height: sizeInfo.height,
-    },
+    size: sizeInfo,
     format: 'depth24plus',
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
@@ -228,7 +232,7 @@ const main = async () => {
     mat4.perspective(
       prejectionMatrix,
       Math.PI / 4,
-      sizeInfo.with / sizeInfo.height,
+      sizeInfo.width / sizeInfo.height,
       0.1,
       100
     );
@@ -290,6 +294,6 @@ interface FragInfo {
 }
 
 interface SizeInfo {
-  with: number;
+  width: number;
   height: number;
 }
