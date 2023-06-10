@@ -1,5 +1,7 @@
+import { mat4, vec3 } from 'gl-matrix';
 import vertexCode from '../shaders/rotating-cube/vertex.wgsl?raw';
 import fragCode from '../shaders/rotating-cube/frag.wgsl?raw';
+import cubeVertex from '../utils/cube';
 
 const initWebGPU = async () => {
   const adapter = await navigator.gpu.requestAdapter();
@@ -12,10 +14,14 @@ const initWebGPU = async () => {
   const canvas = document.querySelector('canvas');
   const ctx = canvas?.getContext('webgpu');
 
-  if (!ctx) {
+  if (!canvas || !ctx) {
     throw new Error("Couldn't get GPUCanvasContext.");
   }
 
+  const sizeInfo = {
+    with: canvas.width,
+    height: canvas.height,
+  };
   // 获取颜色格式，默认为 bgra8unorm: 0-255 的 rgba 格式，但数值范围都在 0-1
   const format = navigator.gpu.getPreferredCanvasFormat();
 
@@ -24,13 +30,15 @@ const initWebGPU = async () => {
     format,
   });
 
-  return { adapter, device, ctx, format };
+  return { adapter, device, ctx, format, sizeInfo };
 };
 
-const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
-  const vertex = new Float32Array([
-    0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.5, -0.5, 0.0,
-  ]);
+const initPipeline = async (
+  device: GPUDevice,
+  format: GPUTextureFormat,
+  sizeInfo: SizeInfo
+) => {
+  const { vertex, vertexCount } = cubeVertex;
   const vertexBuffer = device.createBuffer({
     size: vertex.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
@@ -45,6 +53,11 @@ const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
   });
 
   device.queue.writeBuffer(fragBuffer, 0, frag);
+
+  const mvpMatrixBuffer = device.createBuffer({
+    size: 4 * 4 * 4, // 一个 4x4 的矩阵，每项是占 4 个字节的浮点数
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
 
   const vertexShader = device.createShaderModule({
     code: vertexCode,
@@ -89,6 +102,20 @@ const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
     },
     // 定义了在管线执行期间，所有 GPU 资源（缓冲区、纹理等）的布局（结构、用途和类型）
     layout: 'auto',
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: 'less',
+      format: 'depth24plus', // 深度贴图的数据格式 -> 精度
+    },
+  });
+
+  const depthTexture = device.createTexture({
+    size: {
+      width: sizeInfo.with,
+      height: sizeInfo.height,
+    },
+    format: 'depth24plus',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
   const group = device.createBindGroup({
@@ -101,13 +128,19 @@ const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
           buffer: fragBuffer,
         },
       },
+      {
+        binding: 1,
+        resource: {
+          buffer: mvpMatrixBuffer,
+        },
+      },
     ],
   });
 
   const vertexInfo = {
     vertex,
     vertexBuffer,
-    vertexCount: 3,
+    vertexCount,
   };
   const fragInfo = {
     frag,
@@ -115,7 +148,7 @@ const initPipeline = async (device: GPUDevice, format: GPUTextureFormat) => {
     group,
   };
 
-  return { pipeline, vertexInfo, fragInfo };
+  return { pipeline, vertexInfo, fragInfo, mvpMatrixBuffer, depthTexture };
 };
 
 // WebGPU 采用 commandEncoder 的机制，提前把命令写入 encoder 中，一次性提交给 Native 运行
@@ -124,7 +157,8 @@ const draw = async (
   pipeline: GPURenderPipeline,
   ctx: GPUCanvasContext,
   vertexInfo: VertexInfo,
-  fragInfo: FragInfo
+  fragInfo: FragInfo,
+  depthTexture: GPUTexture
 ) => {
   const encoder = device.createCommandEncoder();
 
@@ -142,6 +176,12 @@ const draw = async (
         storeOp: 'store',
       },
     ],
+    depthStencilAttachment: {
+      view: depthTexture.createView(), // 存在哪个贴图上
+      depthClearValue: 1.0, // 清空的范围
+      depthLoadOp: 'clear', // 绘制前是否清空
+      depthStoreOp: 'store', // 结果是否保留
+    },
   });
 
   renderPass.setPipeline(pipeline);
@@ -157,11 +197,55 @@ const draw = async (
 };
 
 const main = async () => {
-  const { device, format, ctx } = await initWebGPU();
-  const { pipeline, vertexInfo, fragInfo } = await initPipeline(device, format);
+  const { device, format, ctx, sizeInfo } = await initWebGPU();
+  const { pipeline, vertexInfo, fragInfo, mvpMatrixBuffer, depthTexture } =
+    await initPipeline(device, format, sizeInfo);
 
-  // WebGL 同步绘制，但 WebGPU 提交命令后就不会等待绘制结果，而是将结果直接绘制到屏幕上
-  draw(device, pipeline, ctx, vertexInfo, fragInfo);
+  const position = { x: 0, y: 0, z: -8 };
+  const rotation = { x: 0, y: 0, z: 0 };
+  const scale = { x: 1, y: 1, z: 1 };
+
+  const render = () => {
+    const modelViewMatrix = mat4.create();
+
+    mat4.translate(
+      modelViewMatrix,
+      modelViewMatrix,
+      vec3.fromValues(position.x, position.y, position.z)
+    );
+    mat4.rotateX(modelViewMatrix, modelViewMatrix, rotation.x);
+    mat4.rotateY(modelViewMatrix, modelViewMatrix, rotation.y);
+    mat4.rotateZ(modelViewMatrix, modelViewMatrix, rotation.z);
+    mat4.scale(
+      modelViewMatrix,
+      modelViewMatrix,
+      vec3.fromValues(scale.x, scale.y, scale.z)
+    );
+
+    const prejectionMatrix = mat4.create();
+    const mvpMatrix = mat4.create();
+
+    mat4.perspective(
+      prejectionMatrix,
+      Math.PI / 4,
+      sizeInfo.with / sizeInfo.height,
+      0.1,
+      100
+    );
+    mat4.multiply(mvpMatrix, prejectionMatrix, modelViewMatrix);
+
+    device.queue.writeBuffer(mvpMatrixBuffer, 0, mvpMatrix as Float32Array);
+
+    // WebGL 同步绘制，但 WebGPU 提交命令后就不会等待绘制结果，而是将结果直接绘制到屏幕上
+    draw(device, pipeline, ctx, vertexInfo, fragInfo, depthTexture);
+
+    rotation.x += 0.01;
+    rotation.y += 0.01;
+
+    requestAnimationFrame(render);
+  };
+
+  render();
 
   const { vertex, vertexBuffer } = vertexInfo;
   const { frag, fragBuffer } = fragInfo;
@@ -176,7 +260,7 @@ const main = async () => {
       vertex[6] = 0.5 + +value;
 
       device.queue.writeBuffer(vertexBuffer, 0, vertex);
-      draw(device, pipeline, ctx, vertexInfo, fragInfo);
+      draw(device, pipeline, ctx, vertexInfo, fragInfo, depthTexture);
     });
   document
     .querySelector<HTMLInputElement>('input[type="color"]')
@@ -187,7 +271,7 @@ const main = async () => {
       frag[2] = +`0x${hexColor.slice(5)}` / 255;
 
       device.queue.writeBuffer(fragBuffer, 0, frag);
-      draw(device, pipeline, ctx, vertexInfo, fragInfo);
+      draw(device, pipeline, ctx, vertexInfo, fragInfo, depthTexture);
     });
 };
 
@@ -203,4 +287,9 @@ interface FragInfo {
   frag: Float32Array;
   fragBuffer: GPUBuffer;
   group: GPUBindGroup;
+}
+
+interface SizeInfo {
+  with: number;
+  height: number;
 }
