@@ -1,7 +1,7 @@
-import { track } from './effect/index.js';
-import { TRACK_OPERATORS } from './effect/operators.js';
+import { track, trigger } from './effect/index.js';
+import { TRACK_OPERATORS, TRIGGER_TYPES } from './effect/operators.js';
 import { reactive, readonly } from './reactive.js';
-import { isObject } from './utils.js';
+import { isObject, isArray, isIntergerKey, hasOwn } from './utils.js';
 
 function createGetter(isReadonly = false, isShallow = false) {
   return function get(target, key, receiver) {
@@ -22,8 +22,22 @@ function createGetter(isReadonly = false, isShallow = false) {
 }
 
 function createSetter(isShallow = false) {
-  return function set(target, key, receiver) {
-    const isSuccess = Reflect.set(target, key, key, receiver);
+  return function set(target, key, value, receiver) {
+    const oldValue = target[key];
+    // 判断 key 是否是之前已经存在的
+    const hadKey =
+      isArray(target) && isIntergerKey(key)
+        ? +key < target.length // 如果更改的属性是数组的索引，则判断索引是否在数组已有长度内
+        : hasOwn(target, key);
+    const isSuccess = Reflect.set(target, key, value, receiver);
+
+    // 新增
+    if (!hadKey) {
+      trigger(target, TRIGGER_TYPES.ADD, key, value);
+    } else if (oldValue !== value) {
+      // 当数据变更时通知对应属性的 effect 执行
+      trigger(target, TRIGGER_TYPES.SET, key, value, oldValue);
+    }
 
     return isSuccess;
   };
