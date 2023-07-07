@@ -1,3 +1,5 @@
+import { track } from './effect/index.js';
+import { TRACK_OPERATORS } from './effect/operators.js';
 import { reactive, readonly } from './reactive.js';
 import { isObject } from './utils.js';
 
@@ -7,6 +9,7 @@ function createGetter(isReadonly = false, isShallow = false) {
 
     // 可能会被修改，所以需要手机依赖，等数据变化时重新更新
     if (!isReadonly) {
+      track(target, key, TRACK_OPERATORS.GET);
     }
 
     // 取值时在非浅层代理模式下，如果是对象则再对值进行代理（也就是按需代理，懒代理）

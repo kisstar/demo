@@ -18,7 +18,17 @@
         shallowRective,
         readonly,
         shallowReadonly,
-      } from './reactive.js';
+        effect,
+      } from './index.js';
+
+      const personInfo = reactive({
+        name: 'Kisstar',
+        age: 18,
+      });
+
+      effect(function () {
+        document.body.innerHTML = `Hello, I am ${personInfo.name}, I am ${personInfo.age} years old.`;
+      });
     </script>
   </body>
 </html>
