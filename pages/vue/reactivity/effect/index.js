@@ -1,3 +1,6 @@
+import { isArray, isIntergerKey } from '../utils.js';
+import { TRIGGER_TYPES } from '../effect/operators.js';
+
 let uid = 0; // 制作一个 effect 的唯一标识
 let activeEffect; // 当前活动的 effect
 /**
@@ -72,7 +75,51 @@ export function track(target, key, operator) {
   if (!dep) {
     depsMap.set(key, (dep = new Set()));
   }
-  if (dep.has(activeEffect)) {
+  if (!dep.has(activeEffect)) {
     dep.add(activeEffect);
   }
+}
+
+function addEffect(effects, effectSet) {
+  if (effects && effectSet) {
+    effectSet.forEach((effect) => effects.add(effect));
+  }
+}
+
+export function trigger(target, type, key, newValue, oldValue) {
+  const depsMap = targeMap.get(target);
+
+  if (!depsMap) {
+    return;
+  }
+
+  // 收集要执行的 effect 最终一起执行
+  const effects = new Set();
+
+  // 修改是数组的 length 属性
+  if (isArray(target) && key === 'length') {
+    depsMap.forEach((depSet, key) => {
+      // 如果收集的依赖中包含了 length 属性的依赖，以及索引大于更改的长度值对应的依赖都应该被执行
+      // eg: const value = arr[2]; arr.length = 1; // 此时原本索引为 2 的值已经变成了未定义
+      if (key === 'length' || key > newValue) {
+        addEffect(effects, depSet);
+      }
+    });
+  } else {
+    // 如果是更改的情况
+    if (key !== undefined) {
+      addEffect(effects, depsMap.get(key));
+    }
+
+    switch (type) {
+      case TRIGGER_TYPES.ADD:
+        // 如果修改的属性是数组的索引，则将 length 属性的依赖添加进去
+        // eg: const value = arr[2]; arr[99] = 1; // 此时length 将会变成 100
+        if (isArray(target) && isIntergerKey(key)) {
+          addEffect(effects, depsMap.get('length'));
+        }
+    }
+  }
+
+  effects.forEach((effect) => effect());
 }

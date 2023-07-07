@@ -24,11 +24,20 @@
       const personInfo = reactive({
         name: 'Kisstar',
         age: 18,
+        hobbies: ['Candy Crush', 'badminton'],
       });
 
       effect(function () {
-        document.body.innerHTML = `Hello, I am ${personInfo.name}, I am ${personInfo.age} years old.`;
+        document.body.innerHTML = `
+          Hello, I am ${personInfo.name}, I am ${personInfo.age} years old.
+          I have ${personInfo.hobbies.length} hobbies, My favoriate hobby is ${personInfo.hobbies[2]}.
+        `;
       });
+
+      setTimeout(() => {
+        personInfo.name = 'Sharon';
+        personInfo.hobbies.length = 1;
+      }, 1500);
     </script>
   </body>
 </html>
