@@ -1,6 +1,6 @@
 import { track, trigger } from '../effect/index.js';
 import { TRACK_OPERATORS, TRIGGER_TYPES } from '../effect/operators.js';
-import { isObject } from '../utils.js';
+import { isObject, isArray } from '../utils.js';
 import { reactive } from '../reactive.js';
 
 // ref 主要是为了解决普通类型的响应式，当然你也可以传递对象
@@ -39,4 +39,35 @@ class RefImpl {
 
 function createRef(value, isShallow = false) {
   return new RefImpl(value, isShallow);
+}
+
+class ObjectRefImpl {
+  constructor(target, key) {
+    this.__v_isRef = true;
+    this.target = target;
+    this.key = key;
+  }
+
+  get value() {
+    return this.target[this.key];
+  }
+
+  set value(newValue) {
+    this.target[this.key] = newValue;
+  }
+}
+
+// 将一个对象的 key 转换为响应式
+export function toRef(target, key) {
+  return new ObjectRefImpl(target, key);
+}
+
+export function toRefs(target) {
+  const newObj = isArray(target) ? new Array(target.length) : {};
+
+  for (let key in target) {
+    newObj[key] = toRef(target, key);
+  }
+
+  return newObj;
 }
