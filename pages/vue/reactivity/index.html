@@ -19,6 +19,7 @@
         readonly,
         shallowReadonly,
         effect,
+        ref,
       } from './index.js';
 
       const personInfo = reactive({
@@ -26,17 +27,22 @@
         age: 18,
         hobbies: ['Candy Crush', 'badminton'],
       });
+      let feel = ref('good');
 
       effect(function () {
         document.body.innerHTML = `
           Hello, I am ${personInfo.name}, I am ${personInfo.age} years old.
-          I have ${personInfo.hobbies.length} hobbies, My favoriate hobby is ${personInfo.hobbies[2]}.
+          </br>
+          I have ${personInfo.hobbies.length} hobbies, My favoriate hobby is ${personInfo.hobbies[1]}.
+          </br>
+          Sounds ${feel.value}!
         `;
       });
 
       setTimeout(() => {
         personInfo.name = 'Sharon';
         personInfo.hobbies.length = 1;
+        feel.value = 'great';
       }, 1500);
     </script>
   </body>
