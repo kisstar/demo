@@ -22,7 +22,11 @@ export function effect(fn, options = {}) {
   const effect = createReactiveEffect(fn, options);
 
   // 响应式的 effect 默认会执行
-  if (!options.lazy) effect();
+  if (!options.lazy) {
+    return effect();
+  }
+
+  return effect;
 }
 
 function createReactiveEffect(fn, options) {
@@ -40,7 +44,7 @@ function createReactiveEffect(fn, options) {
     try {
       effectStack.push(effect);
       activeEffect = effect;
-      fn();
+      return fn();
     } finally {
       effectStack.pop();
       activeEffect = effectStack[effectStack.length - 1];
@@ -121,5 +125,11 @@ export function trigger(target, type, key, newValue, oldValue) {
     }
   }
 
-  effects.forEach((effect) => effect());
+  effects.forEach((effect) => {
+    if (effect.options.scheduler) {
+      effect.options.scheduler(effect);
+    } else {
+      effect();
+    }
+  });
 }

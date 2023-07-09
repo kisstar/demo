@@ -6,3 +6,5 @@ export const isIntergerKey = (value) => parseInt(value) + '' === value;
 
 export const hasOwn = (target, key) =>
   Object.prototype.hasOwnProperty.call(target, key);
+
+export const isFunction = (value) => typeof value === 'function';
