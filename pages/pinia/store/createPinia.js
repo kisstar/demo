@@ -1,9 +1,5 @@
-import {
-  ref,
-  effectScope,
-} from 'https://cdn.bootcdn.net/ajax/libs/vue/3.2.47/vue.esm-browser.js';
-
-const piniaSymbol = Symbol();
+import { ref, effectScope } from './vue.js';
+import { piniaSymbol } from './rootStore.js';
 
 export function createPinia() {
   const scope = effectScope();
