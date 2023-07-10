@@ -6,16 +6,40 @@ import {
   computed,
   isRef,
   isReactive,
+  toRefs,
 } from './vue.js';
 import { piniaSymbol } from './rootStore.js';
+import { isObject, isFunction } from './utils.js';
 
 function isComputed(v) {
   return isRef(v) && v.effect;
 }
 
+function mergeReactiveObject(target, state) {
+  for (const key in state) {
+    const oldValue = target[key];
+    const newValue = state[key];
+
+    if (isObject(oldValue) && isObject(newValue)) {
+      target[key] = mergeReactiveObject(oldValue, newValue);
+    } else {
+      target[key] = newValue;
+    }
+  }
+}
+
 function createSetupStore(id, setup, pinia, isOptions) {
+  function $patch(paritialStateOrMutatiot) {
+    if (isObject(paritialStateOrMutatiot)) {
+      mergeReactiveObject(pinia.state.value[id], paritialStateOrMutatiot);
+    } else if (isFunction(paritialStateOrMutatiot)) {
+      paritialStateOrMutatiot(pinia.state.value[id]);
+    }
+  }
+
+  const paritialStore = { $patch };
   const initialState = pinia.state.value[id];
-  const store = reactive({}); // 每个 store 就是一个响应式对象
+  const store = reactive(paritialStore); // 每个 store 就是一个响应式对象
   let scope;
 
   if (!initialState && !isOptions) {
@@ -57,7 +81,8 @@ function createOptionsStore(id, options, pinia) {
   const { state, getters, actions } = options;
 
   function setup() {
-    const localState = (pinia.state.value[id] = state ? state() : {});
+    pinia.state.value[id] = state ? state() : {};
+    const localState = toRefs(pinia.state.value[id]);
 
     return Object.assign(
       localState,
