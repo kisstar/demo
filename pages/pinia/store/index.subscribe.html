@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store . $subscribe</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div id="app"></div>
+    <template id="test">
+      <div>Store：</div>
+      <div>{{store.name}}</div>
+      <div>{{store.age}}</div>
+      <button @click="change">修改</button>
+    </template>
+    <script type="module">
+      import { createApp } from './vue.js';
+      import { createPinia, defineStore } from './index.js';
+
+      window.createPinia = createPinia;
+      window.defineStore = defineStore;
+
+      function main() {
+        const app = createApp({
+          template: '#test',
+          setup() {
+            const useUserStore = defineStore('user', {
+              state() {
+                return {
+                  name: 'Kisstar',
+                  age: 20,
+                };
+              },
+            });
+            const store = useUserStore();
+
+            function change() {
+              store.$patch({
+                name: 'Sharon',
+                age: 18,
+              });
+            }
+
+            store.$subscribe((mutation, state) => {
+              console.log('mutation: ', mutation);
+              console.log('state: ', state);
+            });
+
+            return { store, change };
+          },
+        });
+        const pinia = createPinia();
+
+        app.use(pinia);
+        app.mount('#app');
+      }
+
+      main();
+    </script>
+  </body>
+</html>
