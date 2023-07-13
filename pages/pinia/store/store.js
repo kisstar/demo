@@ -7,9 +7,11 @@ import {
   isRef,
   isReactive,
   toRefs,
+  watch,
 } from './vue.js';
 import { piniaSymbol } from './rootStore.js';
 import { isObject, isFunction } from './utils.js';
+import { addSubscription, triggerSubscriptions } from './subscribe.js';
 
 function isComputed(v) {
   return isRef(v) && v.effect;
@@ -37,7 +39,24 @@ function createSetupStore(id, setup, pinia, isOptions) {
     }
   }
 
-  const paritialStore = { $patch };
+  function $subscribe(callback, options) {
+    scope.run(() => {
+      watch(
+        pinia.state.value[id],
+        (state) => {
+          callback({ storeId: id }, state);
+        },
+        options
+      );
+    });
+  }
+
+  const subscriptions = [];
+  const paritialStore = {
+    $patch,
+    $subscribe,
+    $onAction: addSubscription.bind(null, subscriptions),
+  };
   const initialState = pinia.state.value[id];
   const store = reactive(paritialStore); // 每个 store 就是一个响应式对象
   let scope;
@@ -54,7 +73,40 @@ function createSetupStore(id, setup, pinia, isOptions) {
 
   function wrapAction(name, fun) {
     return function (...args) {
-      return fun.call(store, ...args);
+      const errorCallbackList = [];
+      const afterCallbackList = [];
+
+      function onError(cb) {
+        errorCallbackList.push(cb);
+      }
+
+      function after(cb) {
+        afterCallbackList.push(cb);
+      }
+
+      let result;
+
+      triggerSubscriptions(subscriptions, { onError, after });
+
+      try {
+        result = fun.call(store, ...args);
+      } catch (error) {
+        triggerSubscriptions(errorCallbackList, e);
+      }
+
+      if (result instanceof Promise) {
+        result
+          .then(() => {
+            triggerSubscriptions(afterCallbackList, result);
+          })
+          .catch((e) => {
+            triggerSubscriptions(errorCallbackList, e);
+          });
+      } else {
+        triggerSubscriptions(afterCallbackList, result);
+      }
+
+      return result;
     };
   }
 
