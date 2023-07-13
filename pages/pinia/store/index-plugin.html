@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store . plugin</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div id="app"></div>
+    <template id="test">
+      <div>Options Store</div>
+      <div>{{useCountOptionsStore.count}}</div>
+      <div>{{useCountOptionsStore.double}}</div>
+      <button @click="useCountOptionsStore.increment(5)">增加</button>
+      <br />
+      <br />
+      <div>Setup Store</div>
+      <div>{{useCountSetupStore.count}}</div>
+      <div>{{useCountSetupStore.double}}</div>
+      <button @click="useCountSetupStore.increment(5)">增加</button>
+    </template>
+    <script type="module">
+      import { createApp, ref, computed } from './vue.js';
+      import { createPinia, defineStore } from './index.js';
+
+      window.createPinia = createPinia;
+      window.defineStore = defineStore;
+
+      function main() {
+        const app = createApp({
+          template: '#test',
+          setup() {
+            const useCountStore1 = defineStore('count1', {
+              state() {
+                return {
+                  count: 3,
+                };
+              },
+              getters: {
+                double() {
+                  return this.count * 2;
+                },
+              },
+              actions: {
+                increment(payload) {
+                  this.count += payload;
+                },
+              },
+            });
+            const useCountStore2 = defineStore('count2', () => {
+              const count = ref(0);
+
+              const double = computed(() => {
+                return count.value * 2;
+              });
+
+              function increment(payload) {
+                count.value += payload;
+              }
+
+              return {
+                count,
+                double,
+                increment,
+              };
+            });
+            const useCountOptionsStore = useCountStore1();
+            const useCountSetupStore = useCountStore2();
+
+            return { useCountOptionsStore, useCountSetupStore };
+          },
+        });
+        const pinia = createPinia();
+
+        // 持久化插件
+        pinia.use(function ({ store }) {
+          const localState = localStorage.getItem(`${store.$id}_PINIA_STATE`);
+
+          if (localState) {
+            store.$state = JSON.parse(localState);
+          }
+
+          store.$subscribe(({ storeId }, state) => {
+            localStorage.setItem(
+              `${storeId}_PINIA_STATE`,
+              JSON.stringify(state)
+            );
+          });
+        });
+
+        app.use(pinia);
+        app.mount('#app');
+      }
+
+      main();
+    </script>
+  </body>
+</html>

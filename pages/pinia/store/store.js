@@ -138,6 +138,13 @@ function createSetupStore(id, setup, pinia, isOptions) {
       store.$patch((state) => Object.assign(state, newState));
     },
   });
+  store.$id = id;
+  // 执行插件
+  pinia._p.forEach((plugin) => {
+    const pluginStore = scope.run(() => plugin({ store }));
+
+    Object.assign(store, pluginStore);
+  });
 
   return store;
 }
