@@ -51,11 +51,16 @@ function createSetupStore(id, setup, pinia, isOptions) {
     });
   }
 
-  const subscriptions = [];
+  let subscriptions = [];
   const paritialStore = {
     $patch,
     $subscribe,
     $onAction: addSubscription.bind(null, subscriptions),
+    $dispose() {
+      scope.stop(); // 清除响应式
+      subscriptions = []; // 清除订阅
+      pinia._s.delete(id); // 清除状态
+    },
   };
   const initialState = pinia.state.value[id];
   const store = reactive(paritialStore); // 每个 store 就是一个响应式对象
@@ -125,6 +130,14 @@ function createSetupStore(id, setup, pinia, isOptions) {
 
   pinia._s.set(id, store);
   Object.assign(store, setupStore);
+  Object.defineProperty(store, '$state', {
+    get() {
+      return pinia.state.value[id];
+    },
+    set(newState) {
+      store.$patch((state) => Object.assign(state, newState));
+    },
+  });
 
   return store;
 }
