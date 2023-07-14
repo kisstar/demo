@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reactivity</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <script type="module">
+      import {
+        reactive,
+        shallowRective,
+        readonly,
+        shallowReadonly,
+        effect,
+        ref,
+        toRef,
+        toRefs,
+        computed,
+      } from './index.js';
+
+      window.reactive = reactive;
+      window.shallowRective = shallowRective;
+      window.readonly = readonly;
+      window.shallowReadonly = shallowReadonly;
+      window.effect = effect;
+      window.ref = ref;
+      window.toRef = toRef;
+      window.toRefs = toRefs;
+      window.computed = computed;
+
+      function main() {
+        const personInfo = reactive({
+          name: 'Kisstar',
+          age: 18,
+          hobbies: ['Candy Crush', 'badminton'],
+        });
+        const doubleAge = computed(() => {
+          return personInfo.age * 2;
+        });
+        let feel = ref('good');
+
+        effect(function () {
+          document.body.innerHTML = `
+          Hello, I am ${personInfo.name}, I am ${
+            personInfo.age
+          } years old, double age is ${doubleAge.value}.
+          </br>
+          I have ${personInfo.hobbies.length} hobbies, My favoriate hobby is ${
+            personInfo.hobbies[1] || 'secret'
+          }.
+          </br>
+          Sounds ${feel.value}!
+        `;
+        });
+
+        setTimeout(() => {
+          personInfo.name = 'Sharon';
+          personInfo.hobbies.length = 1;
+          feel.value = 'great';
+          personInfo.age = 17;
+        }, 1500);
+      }
+
+      main();
+    </script>
+  </body>
+</html>
