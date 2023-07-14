@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store . isolate</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div id="app"></div>
+    <template id="test">
+      <div>Pinia Store</div>
+    </template>
+    <script type="module">
+      import { createApp, ref, computed } from './vue.js';
+      import { createPinia, defineStore } from './index.js';
+
+      window.createPinia = createPinia;
+      window.defineStore = defineStore;
+
+      function main() {
+        const app = createApp({
+          template: '#test',
+          setup() {},
+        });
+        const pinia = createPinia();
+
+        app.use(pinia);
+        app.mount('#app');
+
+        const useCountStore1 = defineStore('count1', {
+          state() {
+            return {
+              count: 3,
+            };
+          },
+          getters: {
+            double() {
+              return this.count * 2;
+            },
+          },
+          actions: {
+            increment(payload) {
+              this.count += payload;
+            },
+          },
+        });
+
+        // 在组件外使用
+        const useCountOptionsStore = useCountStore1();
+
+        document.querySelector('#app div').innerHTML =
+          useCountOptionsStore.count;
+      }
+
+      main();
+    </script>
+  </body>
+</html>

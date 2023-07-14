@@ -12,6 +12,7 @@ import {
 import { piniaSymbol } from './rootStore.js';
 import { isObject, isFunction } from './utils.js';
 import { addSubscription, triggerSubscriptions } from './subscribe.js';
+import { setActivePinia, getActivePinia } from './createPinia.js';
 
 function isComputed(v) {
   return isRef(v) && v.effect;
@@ -200,7 +201,13 @@ export function defineStore(idOrOptions, setup) {
     // 根据 Vue 模块提供的方法获取当前的应用
     const app = getCurrentInstance();
     // 如果存在说明是在 Vue 组件中在使用，此时可以通过 Vue 提供的 inject() API 获取之前注入的 pinia 对象
-    const pinia = app && inject(piniaSymbol);
+    let pinia = app && inject(piniaSymbol);
+
+    if (pinia) {
+      setActivePinia(pinia);
+    }
+
+    pinia = getActivePinia(pinia);
 
     if (!pinia._s.has(id)) {
       if (isSetupStore) {
