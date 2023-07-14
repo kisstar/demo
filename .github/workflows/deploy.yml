@@ -19,19 +19,11 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Set git user information
-        run: |
-          git config user.name $USER_NAME
-          git config user.email $USER_EMAIL
-        env:
-          USER_NAME: kisstar
-          USER_EMAIL: dwh.chn@foxmail.com
-
       - name: Deploy with gh-pages for GitHub
-        run: |
-          git remote set-url origin https://${GITHUB_TOKEN}@github.com/kisstar/${GITHUB_REPOSITORY}.git
-          npx gh-pages -d pages -b gh-pages
-          git remote remove origin
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          GITHUB_REPOSITORY: demo
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: pages
+          token: ${{ secrets.ACCESS_TOKEN }}
+          git-config-name: kisstar
+          git-config-email: dwh.chn@foxmail.com
