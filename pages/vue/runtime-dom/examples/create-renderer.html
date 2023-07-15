@@ -14,8 +14,9 @@
   <body class="container">
     <div id="app"></div>
     <script type="module">
-      import { createApp } from '../index.js';
+      import { createApp, h, reactive } from '../index.js';
 
+      const info = reactive({ count: 18 });
       const APP = {
         props: {
           name: String,
@@ -28,17 +29,21 @@
           };
         },
         render(proxy) {
-          // 在 pages/vue/runtime-core/component.js 创建实例的方法中尚未处理 setupState 和 data
-          // 所以目前还取不到值，可以直接在其中改变组件对象进行测试
-          console.log('render setupState: ', proxy.setupKey);
-          console.log('render propsState: ', proxy.propsKey);
-          console.log('render dataState: ', proxy.dataKey);
+          return h(
+            'div',
+            {
+              style: { color: 'red' },
+              onClick: function () {
+                console.log('点击了');
+                info.count++;
+              },
+            },
+            ['count: ', `${info.count}`, '!']
+          );
         },
       };
 
-      createApp(APP, {
-        propsKey: 'propsValue',
-      }).mount('#app');
+      createApp(APP).mount('#app');
     </script>
   </body>
 </html>
