@@ -3,7 +3,7 @@
 // 后续存在缓存时更新注册的事件，就直接更新处理器中调用函数的引用
 export const patchEvent = (el, key, value) => {
   const invokers = el._vei || (el._vei = {});
-  const eventName = key.slice(2);
+  const eventName = key.slice(2).toLowerCase();
   const exists = el._vei[eventName];
 
   if (exists) {
@@ -29,4 +29,6 @@ function createInvoker(fn) {
   };
 
   invoker.value = fn;
+
+  return invoker;
 }

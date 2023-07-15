@@ -20,3 +20,5 @@ export function createApp(rootComp, props) {
 
   return app;
 }
+
+export * from '../runtime-core/index.js';

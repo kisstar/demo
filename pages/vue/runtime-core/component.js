@@ -1,4 +1,4 @@
-import { ShapeFlags } from '../shared/index.js';
+import { ShapeFlags, isFunction, isObject } from '../shared/index.js';
 import { PublickInstanceStateHandlers } from './componentPublicInstance.js';
 
 export function createComponentInstance(vnode) {
@@ -43,10 +43,15 @@ function setupStatefulComponent(instance) {
   // 2、获取组件的类型，拿到对应的 setup() 方法
   const component = instance.type;
   const { setup } = component;
-  const setupContext = createSetupContext(instance);
 
-  setup(instance.props, setupContext);
-  component.render(instance.proxy);
+  if (setup) {
+    const setupContext = createSetupContext(instance);
+    const setupResult = setup(instance.props, setupContext);
+
+    handleSetupResult(instance, setupResult);
+  } else {
+    finishSetupComponent(instance);
+  }
 }
 
 function createSetupContext(instance) {
@@ -57,4 +62,24 @@ function createSetupContext(instance) {
     exporse: () => {},
     emit: () => {},
   };
+}
+
+function finishSetupComponent(instance) {
+  const component = instance.type;
+  const { render } = instance;
+
+  if (!render) {
+    // TODO: 对模版进行编译得到 render() 函数，将结果赋值给 component
+    instance.render = component.render;
+  }
+}
+
+function handleSetupResult(instance, setupResult) {
+  if (isFunction(setupResult)) {
+    instance.render = setupResult;
+  } else if (isObject(setupResult)) {
+    instance.setupState = setupResult;
+  }
+
+  finishSetupComponent(instance);
 }

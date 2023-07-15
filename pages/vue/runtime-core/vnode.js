@@ -1,5 +1,11 @@
 import { ShapeFlags, isArray, isString } from '../shared/index.js';
 
+export const TEXT = Symbol('Text');
+
+export function isVnode(value) {
+  return value.__v_isVnode;
+}
+
 export function createVNode(type, props, children = null) {
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT
@@ -11,7 +17,7 @@ export function createVNode(type, props, children = null) {
     children,
     component: null, // 组件的实例
     el: null, // 真实 DOM
-    key: props.key,
+    key: props && props.key,
     shapeFlag,
   };
 
