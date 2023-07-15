@@ -23,14 +23,21 @@
         },
         // 替换 beforeCreate 和 created
         setup(props, context) {
-          return {};
+          return {
+            setupKey: 'setupValue',
+          };
         },
-        render(proxy) {},
+        render(proxy) {
+          // 在 pages/vue/runtime-core/component.js 创建实例的方法中尚未处理 setupState 和 data
+          // 所以目前还取不到值，可以直接在其中改变组件对象进行测试
+          console.log('render setupState: ', proxy.setupKey);
+          console.log('render propsState: ', proxy.propsKey);
+          console.log('render dataState: ', proxy.dataKey);
+        },
       };
 
       createApp(APP, {
-        name: 'Kisstar',
-        age: 18,
+        propsKey: 'propsValue',
       }).mount('#app');
     </script>
   </body>
