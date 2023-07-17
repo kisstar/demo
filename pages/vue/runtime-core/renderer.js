@@ -3,6 +3,7 @@ import { ShapeFlags, isObject } from '../shared/index.js';
 import { createComponentInstance, setupComponent } from './component.js';
 import { effect } from '../reactivity/index.js';
 import { createVNode, TEXT } from './vnode.js';
+import { queueJob } from './scheduler.js';
 
 export function createRenderer(rendererOptions) {
   const {
@@ -70,19 +71,27 @@ export function createRenderer(rendererOptions) {
   // -------------------- 处理组件 ------------------------
 
   function setupRenderEffect(instance, container) {
-    instance.update = effect(function componentEffect() {
-      if (!instance.isMounted) {
-        instance.isMounted = true;
+    instance.update = effect(
+      function componentEffect() {
+        if (!instance.isMounted) {
+          instance.isMounted = true;
 
-        const subTree = instance.render.call(instance.proxy, instance.proxy);
+          const subTree = instance.render.call(instance.proxy, instance.proxy);
 
-        instance.subTree = subTree;
+          instance.subTree = subTree;
 
-        patch(null, subTree, container);
-      } else {
-        // 更新
+          patch(null, subTree, container);
+        } else {
+          // 更新
+          console.log('update');
+        }
+      },
+      {
+        scheduler: function (effect) {
+          queueJob(effect);
+        },
       }
-    });
+    );
   }
 
   function mountComponent(initVnode, container) {
