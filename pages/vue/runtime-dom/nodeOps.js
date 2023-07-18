@@ -12,6 +12,7 @@ export const nodeOps = {
   insert(child, parent, anchor) {
     parent.insertBefore(child, anchor);
   },
+  nextSibling: (el) => el.nextSibling,
   setElementText: (el, text) => (el.textContent = text),
   // 文本
   createText: (text) => document.createTextNode(text),
