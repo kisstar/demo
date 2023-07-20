@@ -136,6 +136,9 @@ export function createRenderer(rendererOptions) {
         keyToIndexMap.set(childVnode.key, i);
       }
 
+      const toBePatched = e2 - s2 + 1;
+      const newIndexToOldIndex = new Array(toBePatched).fill(0);
+
       // 去老的中查找看有没有可以复用的
       for (let i = s1; i <= e1; i++) {
         const oldChildVnode = c1[i];
@@ -145,12 +148,26 @@ export function createRenderer(rendererOptions) {
           // 老的不在新的中则直接移除
           unmount(oldChildVnode);
         } else {
-          // 如果旧的存在就去更新，但此时还没有处理顺序问题
+          // 如果旧的存在，就去更新
           patch(oldChildVnode, c2[newIndex], el);
+          // 但此时只是单纯的更新，还没有处理顺序问题，所以这里先建立新旧之间的索引关系
+          newIndexToOldIndex[newIndex - s2] = i + 1; // 元素在旧列表中的索引
         }
       }
 
-      // TODO: 插入新增的节点和处理顺序
+      for (let i = toBePatched - 1; i >= 0; i--) {
+        const currentIndex = s2 + i;
+        const child = c2[currentIndex];
+        const anchor =
+          currentIndex + 1 < c2.length ? c2[currentIndex + 1].el : null;
+
+        // 为零说明没有对应的旧节点，直接挂载
+        if (newIndexToOldIndex[i] === 0) {
+          patch(null, child, el, anchor);
+        } else {
+          hostInsert(child.el, el, anchor);
+        }
+      }
     }
   }
 
