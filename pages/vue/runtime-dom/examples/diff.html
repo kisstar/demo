@@ -81,6 +81,10 @@
         },
       };
 
+      setTimeout(() => {
+        info.flag = !info.flag;
+      }, 1000);
+
       createApp(APP).mount('#app');
     </script>
   </body>
