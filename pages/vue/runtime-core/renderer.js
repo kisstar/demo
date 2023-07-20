@@ -61,6 +61,99 @@ export function createRenderer(rendererOptions) {
     hostInsert(el, container, anchor);
   }
 
+  function patchKeyedChildren(c1, c2, el) {
+    let i = 0;
+    let e1 = c1.length - 1;
+    let e2 = c2.length - 1;
+
+    // 从头开始比较，遇到不同的停止
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[i];
+      const n2 = c2[i];
+
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el);
+      } else {
+        break;
+      }
+
+      i++;
+    }
+
+    // 从尾开始比较，遇到不同的停止
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[e1];
+      const n2 = c2[e2];
+
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el);
+      } else {
+        break;
+      }
+
+      e1--;
+      e2--;
+    }
+
+    // 老的少，新的多
+    if (i > e1) {
+      // 表示有新增的部分
+      if (i <= e2) {
+        // 上面已经去掉了头部和尾部，剩下的就是中间存有差异的部分
+        // 因为 i 是从前对比相同的递增，而 el 最大为旧的个数减 1，所以 i > el 说明旧的已经遍历完了
+        // 因为，e1 和 e2 是同时减的，所以 e1 < i <= e2 说明新的必定比老的多
+
+        const nextPos = e2 + 1;
+        // 如果当前插入的孩子的索引加 1 小于总的长度的话说明其后面有其它元素
+        // 所以直接取它后面的元素则为插入的参考点
+        const anchor = nextPos < c2.length ? c2[nextPos].el : null;
+
+        while (i <= e2) {
+          patch(null, c2[i], el, anchor); // 向后追加新增的部分
+          i++;
+        }
+      }
+
+      // 老的多，新的少
+    } else if (i > e2) {
+      if (i <= e1) {
+        while (i <= e1) {
+          unmount(c1[i]);
+          i++;
+        }
+      }
+
+      // 乱序
+    } else {
+      let s1 = i;
+      let s2 = i;
+
+      const keyToIndexMap = new Map();
+
+      for (let i = s2; i <= e2; i++) {
+        const childVnode = c2[i];
+
+        keyToIndexMap.set(childVnode.key, i);
+      }
+
+      // 去老的中查找看有没有可以复用的
+      for (let i = s1; i <= e1; i++) {
+        const oldChildVnode = c1[i];
+        const newIndex = keyToIndexMap.get(oldChildVnode.key);
+
+        if (newIndex === undefined) {
+          // 老的不在新的中则直接移除
+          unmount(oldChildVnode);
+        } else {
+          // 如果旧的存在就去更新，但此时还没有处理顺序问题
+          patch(oldChildVnode, c2[newIndex], el);
+        }
+      }
+
+      // TODO: 插入新增的节点和处理顺序
+    }
+  }
+
   function unmountChildren(children) {
     for (let i = 0; i < children.length; i++) {
       hostRemove(children[i]);
@@ -90,6 +183,7 @@ export function createRenderer(rendererOptions) {
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         // 且现在也是数组
         if (nextShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          patchKeyedChildren(c1, c2, el);
         } else {
           // 到这里就说明现在没有孩子，所以移除之前的
           unmountChildren(c1);
