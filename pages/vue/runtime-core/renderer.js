@@ -4,6 +4,7 @@ import { createComponentInstance, setupComponent } from './component.js';
 import { effect } from '../reactivity/index.js';
 import { createVNode, TEXT } from './vnode.js';
 import { queueJob } from './scheduler.js';
+import { getSequence } from './test.js';
 
 export function createRenderer(rendererOptions) {
   const {
@@ -155,6 +156,9 @@ export function createRenderer(rendererOptions) {
         }
       }
 
+      const increasingNewIndexSequence = getSequence(newIndexToOldIndex);
+      let j = increasingNewIndexSequence.length - 1;
+
       for (let i = toBePatched - 1; i >= 0; i--) {
         const currentIndex = s2 + i;
         const child = c2[currentIndex];
@@ -165,7 +169,11 @@ export function createRenderer(rendererOptions) {
         if (newIndexToOldIndex[i] === 0) {
           patch(null, child, el, anchor);
         } else {
-          hostInsert(child.el, el, anchor);
+          if (i !== increasingNewIndexSequence[j]) {
+            hostInsert(child.el, el, anchor);
+          } else {
+            j--; // 跳过不需要移动的元素
+          }
         }
       }
     }
