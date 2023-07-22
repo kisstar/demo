@@ -31,7 +31,7 @@
 //   3-2、如果 6 后面的值没有出现新的值进行替换它也会终究是个潜力，而一旦替换就会成就更小的更具潜力的新序列
 //   4、类似的，如果出现更小的值，也是相对于最初最长的序列来看，当其替换位置的后续值都被替换时就是出头之时
 
-function getSequence(arr) {
+export function getSequence(arr) {
   const len = arr.length;
   const result = [0]; // 数组中的元素表示的是索引，默认包含 0 是将第一项作为基准和后续的值进行比较
   const p = arr.slice(0); // 用来存储索引
@@ -93,7 +93,7 @@ function isEqual(arr1, arr2) {
   return arr1.every((item, i) => item === arr2[i]);
 }
 
-console.log(isEqual(getSequence([5, 3, 4, 0]), [1, 2]));
-console.log(
-  isEqual(getSequence([2, 3, 1, 5, 6, 8, 7, 9, 4]), [0, 1, 3, 4, 6, 7])
-);
+// console.log(isEqual(getSequence([5, 3, 4, 0]), [1, 2]));
+// console.log(
+//   isEqual(getSequence([2, 3, 1, 5, 6, 8, 7, 9, 4]), [0, 1, 3, 4, 6, 7])
+// );
