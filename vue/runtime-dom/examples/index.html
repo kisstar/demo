@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div id="app"></div>
+    <script type="module">
+      import { createApp, h, ref } from '../vue.js';
+
+      const APP = {
+        props: {
+          text: String,
+        },
+        // 替换 beforeCreate 和 created
+        setup(props, context) {
+          console.log('props: ', props);
+          console.log('context: ', context);
+
+          const name = ref('Kisstar');
+
+          return {
+            name,
+          };
+
+          // 也可以直接返回一个 redner 函数
+          /*
+          return () => {
+            return h(
+              'div',
+              { style: { color: 'red' } },
+              `Hello world! I am ${name.value}`
+            );
+          };
+          */
+        },
+        data() {
+          return {
+            age: 18,
+          };
+        },
+        // proxy 参数合并了 setup 返回值和 data 选项的返回值
+        render(proxy) {
+          return h(
+            'div',
+            {
+              style: { color: 'red' },
+              onClick: function () {
+                proxy.age++;
+              },
+            },
+            `I am ${proxy.name}, I am ${proxy.age} years old this year.`
+          );
+        },
+      };
+
+      createApp(APP, {
+        text: 'Hello world!',
+      }).mount('#app');
+    </script>
+  </body>
+</html>

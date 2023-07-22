@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store . storeToRefs</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div id="app"></div>
+    <template id="test">
+      <div>Store：</div>
+      <div>{{name}}</div>
+      <div>{{age}}</div>
+      <button @click="store.change()">修改</button>
+    </template>
+    <script type="module">
+      import { createApp } from './vue.js';
+      import { createPinia, defineStore, storeToRefs } from './index.js';
+
+      window.createPinia = createPinia;
+      window.defineStore = defineStore;
+      window.storeToRefs = storeToRefs;
+
+      function main() {
+        const app = createApp({
+          template: '#test',
+          setup() {
+            const useUserStore = defineStore('user', {
+              state() {
+                return {
+                  name: 'Kisstar',
+                  age: 20,
+                };
+              },
+              actions: {
+                change() {
+                  this.age -= 1;
+                },
+              },
+            });
+            const store = useUserStore();
+            const { name, age } = storeToRefs(store);
+
+            return { store, name, age };
+          },
+        });
+        const pinia = createPinia();
+
+        app.use(pinia);
+        app.mount('#app');
+      }
+
+      main();
+    </script>
+  </body>
+</html>
