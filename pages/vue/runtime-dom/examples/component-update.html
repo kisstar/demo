@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime . componentUpdate</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div id="app"></div>
+    <script type="module">
+      import { createApp, h, reactive } from '../index.js';
+
+      const Child = {
+        props: {
+          name: String,
+        },
+        render() {
+          return h('p', {}, this.name);
+        },
+      };
+
+      const APP = {
+        setup(props, context) {
+          const info = reactive({ name: 'Kisstar' });
+
+          setTimeout(() => {
+            info.name = 'Sharon';
+
+            // 父组件会先进行更新，产生一个新的虚拟节点，然后进入前后 2 个 subTree 的 patch
+          }, 1000);
+
+          return () =>
+            h(
+              'div',
+              {
+                style: { color: 'red' },
+              },
+              h(Child, { name: info.name })
+            );
+        },
+      };
+
+      createApp(APP).mount('#app');
+    </script>
+  </body>
+</html>
