@@ -3,7 +3,7 @@ import { ShapeFlags, isArray, isString } from '../shared/index.js';
 export const TEXT = Symbol('Text');
 
 export function isVnode(value) {
-  return value.__v_isVnode;
+  return value && value.__v_isVnode;
 }
 
 export function createVNode(type, props, children = null) {

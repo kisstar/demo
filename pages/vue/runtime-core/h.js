@@ -11,7 +11,7 @@ export function h(type, propsOrChildren, children) {
         return createVNode(type, null, [propsOrChildren]);
       }
 
-      return createVNode(type, [propsOrChildren]);
+      return createVNode(type, propsOrChildren);
     } else {
       // propsOrChildren 一定是孩子
       return createVNode(type, null, propsOrChildren);
