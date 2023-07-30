@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Runtime . componentUpdate</title>
+    <title>Runtime . Lifecycle</title>
     <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
     <link
       href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
@@ -14,13 +14,35 @@
   <body class="container">
     <div id="app"></div>
     <script type="module">
-      import { createApp, h, reactive } from '../index.js';
+      import {
+        createApp,
+        h,
+        reactive,
+        onBeforeMount,
+        onMounted,
+        onBeforeUpdate,
+        onUpdated,
+      } from '../index.js';
 
       const Child = {
         props: {
           name: String,
         },
+        // TODO: 目前实现是依赖 setup() 函数的
         render() {
+          onBeforeMount(() => {
+            console.log('call child onBeforeMount');
+          });
+          onMounted(() => {
+            console.log('call child onMounted');
+          });
+          onBeforeUpdate(() => {
+            console.log('call child onBeforeUpdate');
+          });
+          onUpdated(() => {
+            console.log('call child onUpdate');
+          });
+
           return h('p', {}, this.name);
         },
       };
@@ -31,10 +53,20 @@
 
           setTimeout(() => {
             info.name = 'Sharon';
-
-            // 父组件会先进行更新，产生一个新的虚拟节点，然后进入前后 2 个 subTree 的 patch
-            // TODO: 组件更新的逻辑源代码尚未实现
           }, 1000);
+
+          onBeforeMount(() => {
+            console.log('call onBeforeMount');
+          });
+          onMounted(() => {
+            console.log('call onMounted');
+          });
+          onBeforeUpdate(() => {
+            console.log('call onBeforeUpdate');
+          });
+          onUpdated(() => {
+            console.log('call onUpdate');
+          });
 
           return () =>
             h(
