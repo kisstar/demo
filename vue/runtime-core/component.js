@@ -37,6 +37,16 @@ export function setupComponent(instance) {
   }
 }
 
+export let currentInstance = null;
+
+export const setCurrentInstance = (instance) => {
+  currentInstance = instance;
+};
+
+export const getCurrentInstance = () => {
+  return currentInstance;
+};
+
 function setupStatefulComponent(instance) {
   // 1、代理传递给 render() 函数的参数
   instance.proxy = new Proxy(instance.ctx, PublickInstanceStateHandlers);
@@ -45,9 +55,12 @@ function setupStatefulComponent(instance) {
   const { setup } = component;
 
   if (setup) {
+    currentInstance = instance;
+
     const setupContext = createSetupContext(instance);
     const setupResult = setup(instance.props, setupContext);
 
+    currentInstance = null;
     handleSetupResult(instance, setupResult);
   } else {
     finishSetupComponent(instance);

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime . Lifecycle</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div id="app"></div>
+    <script type="module">
+      import {
+        createApp,
+        h,
+        reactive,
+        onBeforeMount,
+        onMounted,
+        onBeforeUpdate,
+        onUpdated,
+      } from '../index.js';
+
+      const Child = {
+        props: {
+          name: String,
+        },
+        // TODO: 目前实现是依赖 setup() 函数的
+        render() {
+          onBeforeMount(() => {
+            console.log('call child onBeforeMount');
+          });
+          onMounted(() => {
+            console.log('call child onMounted');
+          });
+          onBeforeUpdate(() => {
+            console.log('call child onBeforeUpdate');
+          });
+          onUpdated(() => {
+            console.log('call child onUpdate');
+          });
+
+          return h('p', {}, this.name);
+        },
+      };
+
+      const APP = {
+        setup(props, context) {
+          const info = reactive({ name: 'Kisstar' });
+
+          setTimeout(() => {
+            info.name = 'Sharon';
+          }, 1000);
+
+          onBeforeMount(() => {
+            console.log('call onBeforeMount');
+          });
+          onMounted(() => {
+            console.log('call onMounted');
+          });
+          onBeforeUpdate(() => {
+            console.log('call onBeforeUpdate');
+          });
+          onUpdated(() => {
+            console.log('call onUpdate');
+          });
+
+          return () =>
+            h(
+              'div',
+              {
+                style: { color: 'red' },
+              },
+              h(Child, { name: info.name })
+            );
+        },
+      };
+
+      createApp(APP).mount('#app');
+    </script>
+  </body>
+</html>
