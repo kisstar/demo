@@ -5,6 +5,7 @@ import { effect } from '../reactivity/index.js';
 import { createVNode, TEXT } from './vnode.js';
 import { queueJob } from './scheduler.js';
 import { getSequence } from './test.js';
+import { invokeFunctionList } from './apiLifecycle.js';
 
 export function createRenderer(rendererOptions) {
   const {
@@ -273,19 +274,39 @@ export function createRenderer(rendererOptions) {
     instance.update = effect(
       function componentEffect() {
         if (!instance.isMounted) {
-          instance.isMounted = true;
+          const { bm, m } = instance;
+
+          if (bm) {
+            invokeFunctionList(bm);
+          }
 
           const subTree = instance.render.call(instance.proxy, instance.proxy);
 
           instance.subTree = subTree;
-
           patch(null, subTree, container);
+          instance.isMounted = true;
+
+          // TODO: 考虑子组件
+          if (m) {
+            invokeFunctionList(m);
+          }
         } else {
+          const { bu, u } = instance;
+
+          if (bu) {
+            invokeFunctionList(bu);
+          }
+
           // 更新
           const preTree = instance.subTree;
           const nextTree = instance.render.call(instance.proxy, instance.proxy);
 
           patch(preTree, nextTree, container);
+
+          // TODO: 考虑子组件
+          if (u) {
+            invokeFunctionList(u);
+          }
         }
       },
       {
