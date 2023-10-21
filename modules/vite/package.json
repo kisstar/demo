@@ -1,0 +1,12 @@
+{
+  "name": "vite",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "vite": "./bin/vite.js"
+  },
+  "dependencies": {
+    "connect": "^3.7.0",
+    "sirv": "^2.0.3"
+  }
+}
