@@ -9,5 +9,8 @@
     "connect": "^3.7.0",
     "esbuild": "^0.19.5",
     "sirv": "^2.0.3"
+  },
+  "devDependencies": {
+    "vue": "^3.3.6"
   }
 }
