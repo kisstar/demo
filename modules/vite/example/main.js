@@ -1,1 +1,3 @@
-console.log('HHello, My Vite!');
+import { createApp } from 'vue';
+
+console.log(createApp);
