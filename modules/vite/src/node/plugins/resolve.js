@@ -2,10 +2,17 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { isWindows } from '../utils.js';
 
-export function resolvePlugin({ root }) {
+export function resolvePlugin({ root, asSrc }) {
   return {
     name: 'vite:resolve',
     async resolveId(id, importer, resolveOpts) {
+      // URL
+      // /foo -> /fs-root/foo
+      if (asSrc && id[0] === '/' && !id.startsWith(root)) {
+        const fsPath = path.resolve(root, id.slice(1));
+
+        return { id: fsPath };
+      }
       if (isWindows && id.startsWith('/')) {
         return {
           id: path.resolve(root, id.slice(1)),

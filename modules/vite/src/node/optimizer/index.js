@@ -1,8 +1,13 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import esbuild from 'esbuild';
-export { initDepsOptimizer } from './optimizer.js';
 import { flattenId } from '../utils.js';
+
+export { initDepsOptimizer, getDepsOptimizer } from './optimizer.js';
+
+export function optimizedDepInfoFromId(metadata, id) {
+  return metadata.optimized[id] || metadata.discovered[id];
+}
 
 export function runOptimizeDeps(resolvedConfig, depsInfo) {
   const metadata = {
