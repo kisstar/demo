@@ -9,7 +9,7 @@ export function transformMiddleware(server) {
 
     let url = req.url;
 
-    if (/\.js/.test(url)) {
+    if (/\.js|vue/.test(url)) {
       const result = await transformRequest(url, server);
 
       if (result) {
