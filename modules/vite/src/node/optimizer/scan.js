@@ -69,6 +69,21 @@ function esbuildScanPlugin(config, container, deps) {
           };
         }
       );
+      build.onResolve(
+        {
+          filter: /\.vue$/,
+        },
+        async ({ path: id, importer }) => {
+          const resolved = await resolve(id, importer);
+
+          if (resolved) {
+            return {
+              path: resolved.id,
+              external: true,
+            };
+          }
+        }
+      );
       // 处理其它类型的文件
       build.onResolve({ filter: /.*/ }, async ({ path: id, importer }) => {
         const resolved = await resolve(id, importer);

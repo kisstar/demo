@@ -16,7 +16,20 @@ export async function resolveConfig(config = {}) {
     plugins: [],
   };
 
-  resolved.plugins = await resolvePlugins(resolved);
+  const { config: userConfig } = await loadConfigFromFile('vite.config.js');
+  const { plugins: userPlugins = [] } = userConfig;
+
+  resolved.plugins = await resolvePlugins(resolved, userPlugins);
 
   return resolved;
+}
+
+export async function loadConfigFromFile(
+  configFile,
+  configRoot = process.cwd()
+) {
+  const filePath = path.resolve(configRoot, configFile);
+  const config = await import(filePath).then((module) => module.default);
+
+  return { path: filePath, config };
 }
