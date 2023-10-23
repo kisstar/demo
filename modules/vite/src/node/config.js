@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { resolvePlugin } from './plugins/resolve.js';
+import { resolvePlugins } from './plugins/index.js';
 
 export async function resolveConfig(config = {}) {
   const root = config.root ? path.resolve(config.root) : process.cwd();
@@ -13,8 +13,10 @@ export async function resolveConfig(config = {}) {
     root,
     publicDir,
     cacheDir,
-    plugins: [resolvePlugin({ root })],
+    plugins: [],
   };
+
+  resolved.plugins = await resolvePlugins(resolved);
 
   return resolved;
 }

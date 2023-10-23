@@ -3,26 +3,45 @@ import { scanImports } from './scan.js';
 import { flattenId } from '../utils.js';
 import { runOptimizeDeps } from './index.js';
 
+const depsOptimizerMap = new WeakMap();
+
+export function getDepsOptimizer(config) {
+  return depsOptimizerMap.get(config.mainConfig || config);
+}
+
 export async function initDepsOptimizer(config, server) {
   await createDepsOptimizer(config, server);
 }
 
 async function createDepsOptimizer(config, server) {
-  const discover = discoverProjectDependencies(config);
   const metadata = {
     optimized: {},
     discovered: {},
   };
-  const deps = await discover.result;
+  const depsOptimizer = {
+    metadata,
+    getOptimizedDepId: (depInfo) => depInfo.file,
+  };
 
-  for (const id of Object.keys(deps)) {
-    if (!metadata.discovered[id]) {
-      addMissingDep(id, deps[id]);
-    }
-  }
+  depsOptimizerMap.set(config, depsOptimizer);
+  depsOptimizer.scanProcessing = new Promise((resolve) => {
+    (async () => {
+      const discover = discoverProjectDependencies(config);
+      const deps = await discover.result;
 
-  const knownDeps = prepareKnownDeps();
-  const optimizationResult = runOptimizeDeps(config, knownDeps);
+      for (const id of Object.keys(deps)) {
+        if (!metadata.discovered[id]) {
+          addMissingDep(id, deps[id]);
+        }
+      }
+
+      const knownDeps = prepareKnownDeps();
+      const optimizationResult = runOptimizeDeps(config, knownDeps);
+
+      resolve();
+      depsOptimizer.scanProcessing = undefined;
+    })();
+  });
 
   function addMissingDep(id, resolved) {
     metadata.discovered[id] = {
