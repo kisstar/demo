@@ -9,5 +9,8 @@ ffmpeg -i input.mp4 -vn -ar 44100 -ac 2 -f s16le out.pcm
 PCM 文件播放：
 ffplay -ac 2 -ar 44100 -f s16le come-here.pcm
 
-MP4toMP3：
-ffmpeg -i the-degenerate_v5_1920x798.mp4 the-degenerate_v5_1920x798.mp3
+MP42MP3：
+ffmpeg -i input.mp4 output.mp3
+
+MP4 to Fragmented MP4 in HLS
+ffmpeg -i input.mp4 -hls_flags single_file output.m3u8

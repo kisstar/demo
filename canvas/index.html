@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>画布 - 涂鸦</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100vh;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body class="container">
+    <canvas width="657" height="380"></canvas>
+    <button id="toggler" type="button" class="btn btn-primary">
+      画笔/笔刷
+    </button>
+    <script src="js/image.js"></script>
+    <script src="js/canvas.js"></script>
+    <script>
+      const el = document.querySelector('canvas');
+      let canvas = null;
+      let image = null;
+
+      async function drawImage() {
+        image = await loadImage(
+          '/public/images/canvas/the-degenerate-template.jpeg'
+        );
+        canvas = new Canvas({ el });
+        canvas.drawImage({ image });
+        canvas.replaceColor();
+      }
+
+      drawImage();
+
+      // 画笔
+      const width = 20;
+      const leftDiff = el.offsetLeft + width / 2;
+      const topDiff = el.offsetTop + width / 2;
+      let startX = 0;
+      let startY = 0;
+      let globalCompositeOperation = 'destination-out';
+      let color = 'rgba(0, 0, 0, 1)';
+      let isPen = true;
+      const moveHandler = (e) => {
+        const { clientX, clientY } = e;
+        const newX = clientX - leftDiff;
+        const newY = clientY - topDiff;
+
+        canvas.drawLine(
+          {
+            startX,
+            startY,
+            endX: newX,
+            endY: newY,
+          },
+          { width, globalCompositeOperation, color }
+        );
+        startX = newX;
+        startY = newY;
+      };
+      el.addEventListener('mousedown', (e) => {
+        const { clientX, clientY } = e;
+
+        startX = clientX - leftDiff;
+        startY = clientY - topDiff;
+        el.addEventListener('mousemove', moveHandler);
+      });
+      el.addEventListener('mouseup', () => {
+        el.removeEventListener('mousemove', moveHandler);
+      });
+      document.querySelector('#toggler').addEventListener('click', () => {
+        if (isPen) {
+          isPen = false;
+          globalCompositeOperation = 'source-over';
+          color = 'rgba(46, 99, 146, 1)';
+        } else {
+          isPen = true;
+          globalCompositeOperation = 'destination-out';
+          color = 'rgba(0, 0, 0, 1)';
+        }
+      });
+
+      // TODO: 右边其实是通过左边得到模板，然后根据原图绘制右边
+    </script>
+  </body>
+</html>
