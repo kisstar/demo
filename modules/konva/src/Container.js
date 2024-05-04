@@ -22,4 +22,15 @@ export class Container extends Node {
       child[drawMethod](canvas);
     });
   }
+
+  getChildren() {
+    return this.children;
+  }
+
+  _setChildrenIndices() {
+    this.children?.forEach(function (child, n) {
+      child.index = n;
+    });
+    this._requestDraw();
+  }
 }

@@ -30,6 +30,13 @@ export class Stage extends Container {
     return this;
   }
 
+  batchDraw() {
+    this.getChildren().forEach(function (layer) {
+      layer.batchDraw();
+    });
+    return this;
+  }
+
   _buildDOM() {
     this.content = document.createElement('div');
     this.container.appendChild(this.content);
