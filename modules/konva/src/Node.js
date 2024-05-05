@@ -1,6 +1,12 @@
 import { Konva } from './Global.js';
+import { SceneCanvas } from './Canvas.js';
+
+const CANVAS = 'canvas';
 
 export class Node {
+  _cache = new Map();
+  _filters = [];
+
   constructor(config) {
     this.config = config;
   }
@@ -52,5 +58,101 @@ export class Node {
     } else {
       return null;
     }
+  }
+
+  _getCanvasCache() {
+    return this._cache.get(CANVAS);
+  }
+
+  cache() {
+    const { width, height } = this.config;
+    const cachedSceneCanvas = new SceneCanvas({
+        width: width,
+        height: height,
+      }),
+      cachedFilterCanvas = new SceneCanvas({
+        width: 0,
+        height: 0,
+        willReadFrequently: true,
+      }),
+      sceneContext = cachedSceneCanvas.context._context;
+
+    cachedSceneCanvas.isCache = true;
+    this._cache.delete(CANVAS);
+    sceneContext.save();
+    this.drawScene(cachedSceneCanvas, this);
+    sceneContext.restore();
+    this._cache.set(CANVAS, {
+      scene: cachedSceneCanvas,
+      filter: cachedFilterCanvas,
+    });
+    this._requestDraw();
+
+    return this;
+  }
+
+  _drawCachedSceneCanvas(context) {
+    context.save();
+    const cacheCanvas = this._getCachedSceneCanvas();
+    context.drawImage(
+      cacheCanvas._canvas,
+      0,
+      0,
+      cacheCanvas.width,
+      cacheCanvas.height
+    );
+    context.restore();
+  }
+
+  _getCachedSceneCanvas() {
+    var filters = this.filters(),
+      cachedCanvas = this._getCanvasCache(),
+      sceneCanvas = cachedCanvas.scene,
+      filterCanvas = cachedCanvas.filter,
+      filterContext = filterCanvas.context._context,
+      len,
+      imageData,
+      n,
+      filter;
+
+    if (filters) {
+      filterCanvas.setSize(sceneCanvas.width, sceneCanvas.height);
+      len = filters.length;
+      filterContext.clearRect(0, 0, filterCanvas.width, filterCanvas.height);
+
+      // copy cached canvas onto filter context
+      filterContext.drawImage(
+        sceneCanvas._canvas,
+        0,
+        0,
+        sceneCanvas.width,
+        sceneCanvas.height
+      );
+      imageData = filterContext.getImageData(
+        0,
+        0,
+        filterCanvas.width,
+        filterCanvas.height
+      );
+
+      // apply filters to filter context
+      for (n = 0; n < len; n++) {
+        filter = filters[n];
+        filter.call(this, imageData);
+        filterContext.putImageData(imageData, 0, 0);
+      }
+
+      return filterCanvas;
+    }
+
+    return sceneCanvas;
+  }
+
+  filters(filters) {
+    if (filters) {
+      this._filters = filters;
+    }
+
+    return this._filters;
   }
 }

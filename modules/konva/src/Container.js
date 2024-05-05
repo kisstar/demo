@@ -11,6 +11,7 @@ export class Container extends Node {
     child.parent = this;
 
     this.children.push(child);
+    this._requestDraw();
   }
 
   drawScene(canvas) {

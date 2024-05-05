@@ -29,5 +29,6 @@ export class SceneCanvas extends Canvas {
     this.context = new SceneContext(this, {
       willReadFrequently: config.willReadFrequently,
     });
+    this.setSize(config.width, config.height);
   }
 }
