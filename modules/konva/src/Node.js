@@ -1,5 +1,5 @@
 import { Konva } from './Global.js';
-import { SceneCanvas } from './Canvas.js';
+import { SceneCanvas, HitCanvas } from './Canvas.js';
 
 const CANVAS = 'canvas';
 
@@ -13,6 +13,7 @@ export class Node {
 
   draw() {
     this.drawScene();
+    this.drawHit();
     return this;
   }
 
@@ -75,16 +76,23 @@ export class Node {
         height: 0,
         willReadFrequently: true,
       }),
+      cachedHitCanvas = new HitCanvas({
+        width: width,
+        height: height,
+      }),
       sceneContext = cachedSceneCanvas.context._context;
 
+    cachedHitCanvas.isCache = true;
     cachedSceneCanvas.isCache = true;
     this._cache.delete(CANVAS);
     sceneContext.save();
     this.drawScene(cachedSceneCanvas, this);
+    this.drawHit(cachedHitCanvas, this);
     sceneContext.restore();
     this._cache.set(CANVAS, {
       scene: cachedSceneCanvas,
       filter: cachedFilterCanvas,
+      hit: cachedHitCanvas,
     });
     this._requestDraw();
 
@@ -146,6 +154,21 @@ export class Node {
     }
 
     return sceneCanvas;
+  }
+
+  _drawCachedHitCanvas(context) {
+    const canvasCache = this._getCanvasCache(),
+      hitCanvas = canvasCache.hit;
+    context.save();
+    // context.translate(canvasCache.x, canvasCache.y);
+    context.drawImage(
+      hitCanvas._canvas,
+      0,
+      0,
+      hitCanvas.width,
+      hitCanvas.height
+    );
+    context.restore();
   }
 
   filters(filters) {

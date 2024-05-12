@@ -12,3 +12,12 @@ export class SceneContext extends Context {
     });
   }
 }
+
+export class HitContext extends Context {
+  constructor(canvas) {
+    super(canvas);
+    this._context = canvas._canvas.getContext('2d', {
+      willReadFrequently: true,
+    });
+  }
+}

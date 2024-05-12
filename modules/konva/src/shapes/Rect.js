@@ -10,4 +10,14 @@ export class Rect extends Shape {
     context.fillStyle = fill;
     context.fill();
   }
+
+  _hitFunc(context) {
+    const { width = 200, height = 100 } = this.config;
+
+    context.beginPath();
+    context.rect(0, 0, width, height);
+    context.closePath();
+    context.fillStyle = this.colorKey;
+    context.fill();
+  }
 }

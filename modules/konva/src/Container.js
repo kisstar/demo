@@ -18,6 +18,10 @@ export class Container extends Node {
     this._drawChildren('drawScene', canvas);
   }
 
+  drawHit(canvas) {
+    this._drawChildren('drawHit', canvas);
+  }
+
   _drawChildren(drawMethod, canvas) {
     this.children?.forEach(function (child) {
       child[drawMethod](canvas);
