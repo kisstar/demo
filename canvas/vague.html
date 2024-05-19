@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>画布 - 抗锯齿</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      canvas {
+        border: 1px solid #eee;
+      }
+    </style>
+  </head>
+
+  <body class="container mt-3">
+    <div class="input-group mb-3">
+      <input type="file" class="form-control" id="inputGroupFile01" />
+    </div>
+
+    <canvas></canvas>
+
+    <script>
+      /**
+       * 无论 canvas 的绘制尺寸是多小，只要满足把图片 1:1 地画到 canvas 上时，就不会出现模糊的情况；
+       * 当对其进行缩放时，浏览器为了抗锯齿，默认会进行插值计算，所以会出现模糊的情况。
+       * 解决办法：canvas 的 imageSmoothingEnabled 设置为 false
+       */
+
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+
+      window.userConfig = {
+        userDevicePixelRatio: window.devicePixelRatio || 1,
+        userImageSmoothingEnabled: true,
+      };
+
+      function handleLoad(image) {
+        const pixelRatio = userConfig.userDevicePixelRatio;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.imageSmoothingEnabled = userConfig.userImageSmoothingEnabled;
+        ctx.scale(pixelRatio, pixelRatio);
+
+        canvas.width = image.naturalWidth * pixelRatio;
+        canvas.height = image.naturalHeight * pixelRatio;
+        canvas.style.width = `${image.naturalWidth}px`;
+        canvas.style.height = `${image.naturalHeight}px`;
+
+        ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+        window.getColorMap = () => {
+          const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          const len = data.length;
+          const map = {};
+          let total = 0;
+
+          for (let i = 0; i < len; i += 4) {
+            let colorStr = `${data[i]},${data[i + 1]},${data[i + 2]},${
+              data[i + 3]
+            }`;
+
+            if (!map[colorStr]) {
+              map[colorStr] = 1;
+              total++;
+            } else {
+              map[colorStr] += 1;
+            }
+          }
+
+          console.log('total: ', total);
+          console.log(map);
+        };
+        getColorMap();
+      }
+
+      function drawImage(url) {
+        const image = new Image();
+
+        // 默认加载一张 10x10 的黑白相间的图片
+        image.crossOrigin = 'Anonymous';
+        image.src = url || '/public/images/canvas/black-white.png';
+        image.onload = () => {
+          handleLoad(image);
+          if (url) {
+            URL.revokeObjectURL(url);
+          }
+        };
+        image.onerror = () => {
+          console.error('图片加载失败');
+          if (url) {
+            URL.revokeObjectURL(url);
+          }
+        };
+      }
+
+      const inputEl = document.querySelector('#inputGroupFile01');
+
+      inputEl.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const url = URL.createObjectURL(file);
+
+        drawImage(url);
+      });
+
+      drawImage();
+    </script>
+  </body>
+</html>
