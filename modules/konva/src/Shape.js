@@ -76,3 +76,5 @@ export class Shape extends Node {
     return this;
   }
 }
+
+Shape.prototype.nodeType = 'Shape';

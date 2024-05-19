@@ -70,3 +70,5 @@ export class Layer extends Container {
     return {};
   }
 }
+
+Layer.prototype.nodeType = 'Layer';

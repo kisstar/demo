@@ -53,3 +53,5 @@ export class Stage extends Container {
     }
   }
 }
+
+Stage.prototype.nodeType = 'Stage';

@@ -8,4 +8,7 @@
 // import './02-filter.js';
 
 // 通过位置获取对象
-import './03-pos2shape.js';
+// import './03-pos2shape.js';
+
+// 选择器
+import './04-selector.js';

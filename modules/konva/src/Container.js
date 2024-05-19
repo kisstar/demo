@@ -38,4 +38,38 @@ export class Container extends Node {
     });
     this._requestDraw();
   }
+
+  hasChildren() {
+    return this.getChildren().length > 0;
+  }
+
+  find(selector) {
+    const result = [];
+
+    this._find(this, selector, false, result);
+
+    return result;
+  }
+
+  _find(node, selector, findOne, result) {
+    const children = node.getChildren();
+
+    for (const child of children) {
+      const finded = child._isMatch(selector);
+
+      if (finded) {
+        result.push(child);
+
+        if (findOne) {
+          break;
+        }
+      } else {
+        continue;
+      }
+
+      if (child.hasChildren()) {
+        this._find(child, selector, findOne, result);
+      }
+    }
+  }
 }

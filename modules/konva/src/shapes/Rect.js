@@ -21,3 +21,5 @@ export class Rect extends Shape {
     context.fill();
   }
 }
+
+Rect.prototype.className = 'Rect';

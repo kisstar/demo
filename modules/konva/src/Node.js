@@ -178,4 +178,52 @@ export class Node {
 
     return this._filters;
   }
+
+  hasChildren() {
+    return false;
+  }
+
+  hasName(name) {
+    if (!name) {
+      return false;
+    }
+    const fullName = this.config.name;
+    const names = (fullName || '').split(/\s/g);
+    return names.indexOf(name) !== -1;
+  }
+
+  _isMatch(selectorOrFunction) {
+    if (!selectorOrFunction) {
+      return false;
+    }
+    if (typeof selectorOrFunction === 'function') {
+      return selectorOrFunction(this);
+    }
+    let selectorArr = selectorOrFunction.replace(/ /g, '').split(','),
+      len = selectorArr.length,
+      n,
+      sel;
+
+    for (n = 0; n < len; n++) {
+      sel = selectorArr[n];
+
+      // id selector
+      if (sel.charAt(0) === '#') {
+        if (this.config.id === sel.slice(1)) {
+          return true;
+        }
+      } else if (sel.charAt(0) === '.') {
+        // name selector
+        if (this.hasName(sel.slice(1))) {
+          return true;
+        }
+      } else if (this.className === sel || this.nodeType === sel) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }
+
+Node.prototype.nodeType = 'Node';
