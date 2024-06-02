@@ -49,7 +49,8 @@ export class Layer extends Container {
   }
 
   getIntersection(pos) {
-    return this._getIntersection(pos);
+    const obj = this._getIntersection(pos);
+    return obj.shape;
   }
 
   _getIntersection(pos) {

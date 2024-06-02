@@ -78,3 +78,4 @@ export class Shape extends Node {
 }
 
 Shape.prototype.nodeType = 'Shape';
+Shape.prototype.eventListeners = {};

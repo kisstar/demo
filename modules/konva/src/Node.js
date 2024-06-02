@@ -224,6 +224,46 @@ export class Node {
 
     return false;
   }
+
+  _fire(eventType, evt) {
+    evt = evt || {};
+    evt.currentTarget = this;
+    evt.type = eventType;
+
+    const selfListeners = this.eventListeners[eventType];
+    if (selfListeners) {
+      for (var i = 0; i < selfListeners.length; i++) {
+        selfListeners[i].handler.call(this, evt);
+      }
+    }
+  }
+
+  _fireAndBubble(eventType, evt) {
+    if (evt && this.nodeType === 'Shape') {
+      evt.target = this;
+    }
+
+    this._fire(eventType, evt);
+
+    // 继续向上冒泡
+    if (((evt && !evt.cancelBubble) || !evt) && this.parent) {
+      this._fireAndBubble.call(this.parent, eventType, evt);
+    }
+  }
+
+  on(eventType, fn) {
+    this.eventListeners[eventType] = this.eventListeners[eventType] || [];
+    this.eventListeners[eventType].push({ handler: fn });
+  }
+
+  fire(eventType, evt) {
+    if (!this.eventListeners[eventType].length) return;
+
+    for (var i = 0; i < this.eventListeners[eventType].length; i++) {
+      this.eventListeners[eventType][i].handler.call(this, evt);
+    }
+  }
 }
 
 Node.prototype.nodeType = 'Node';
+Node.prototype.eventListeners = {};

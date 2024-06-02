@@ -11,4 +11,7 @@
 // import './03-pos2shape.js';
 
 // 选择器
-import './04-selector.js';
+// import './04-selector.js';
+
+// 事件系统
+import './05-event.js';
