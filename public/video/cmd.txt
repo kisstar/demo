@@ -14,3 +14,9 @@ ffmpeg -i input.mp4 output.mp3
 
 MP4 to Fragmented MP4 in HLS
 ffmpeg -i input.mp4 -hls_flags single_file output.m3u8
+
+分离视频：
+ffmpeg -i input.mp4 -vcodec copy -an output.mp4
+
+分离音频：
+ffmpeg -i input.mp4 -acodec copy -vn output.mp4

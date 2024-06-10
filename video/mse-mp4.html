@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>MSE play non fragmented MP4 | Web API</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+  </head>
+
+  <body>
+    <video controls></video>
+
+    <script src="https://gpac.github.io/mp4box.js/dist/mp4box.all.js"></script>
+    <script>
+      const mp4File = MP4Box.createFile();
+      const video = document.querySelector('video');
+      const mediaSource = new MediaSource();
+
+      video.src = URL.createObjectURL(mediaSource);
+      mediaSource.addEventListener('sourceopen', sourceOpen);
+
+      function sourceOpen() {
+        fetch('../public/video/come-here.mp4').then(async (res) => {
+          const buf = await res.arrayBuffer();
+
+          buf.fileStart = 0; // [重要]
+          mp4File.appendBuffer(buf, true);
+          mp4File.flush(); // 指示将不再接收任何数据
+        });
+      }
+
+      // onRead y回调函数在 moov box 被解析时被调用，即当有关文件的元数据被解析时。
+      mp4File.onReady = (fileInfo) => {
+        mediaSource.duration = fileInfo.duration / fileInfo.timescale;
+        // 根据轨道信息创建对应的 SourceBuffer
+        fileInfo.tracks.forEach((track) => {
+          const mime = `video/mp4; codecs="${track.codec}"`;
+          const sourceBuffer = mediaSource.addSourceBuffer(mime);
+
+          sourceBuffer.pendingAppends = [];
+          sourceBuffer.addEventListener('updateend', () => {
+            if (
+              sourceBuffer.updating === false &&
+              sourceBuffer.pendingAppends.length > 0
+            ) {
+              const { buffer, isEnd } = sourceBuffer.pendingAppends.shift();
+
+              sourceBuffer.appendBuffer(buffer);
+              sourceBuffer.isEnd = isEnd;
+            }
+            if (
+              mediaSource.readyState === 'open' &&
+              sourceBuffer.updating === false &&
+              sourceBuffer.isEnd
+            ) {
+              mediaSource.endOfStream();
+            }
+          });
+          mp4File.setSegmentOptions(track.id, sourceBuffer);
+        });
+
+        const initSegs = mp4File.initializeSegmentation();
+
+        initSegs.forEach(({ user, buffer }) => user.appendBuffer(buffer));
+        mp4File.start();
+      };
+
+      mp4File.onSegment = function (id, user, buffer, sampleNum, isEnd) {
+        user.pendingAppends.push({ id, buffer, sampleNum, isEnd });
+      };
+    </script>
+  </body>
+</html>

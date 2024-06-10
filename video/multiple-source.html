@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>MSE play multiple sources | Web API</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+  </head>
+
+  <body>
+    <video controls></video>
+
+    <script>
+      const video = document.querySelector('video');
+      const mediaSource = new MediaSource();
+
+      video.src = URL.createObjectURL(mediaSource);
+      mediaSource.addEventListener('sourceopen', sourceOpen);
+
+      function sourceOpen() {
+        const audioSourceBuffer = mediaSource.addSourceBuffer(
+          'video/mp4; codecs="mp4a.40.2"'
+        );
+        const videoSourceBuffer = mediaSource.addSourceBuffer(
+          'video/mp4; codecs="avc1.42E01E"'
+        );
+
+        const ap = fetch('../public/video/frag_vn_come-here.mp4').then(
+          (res) => {
+            return new Promise(async (resolve, reject) => {
+              audioSourceBuffer.addEventListener('updateend', resolve);
+              audioSourceBuffer.appendBuffer(await res.arrayBuffer());
+            });
+          }
+        );
+        const vp = fetch('../public/video/frag_an_come-here.mp4').then(
+          (res) => {
+            return new Promise(async (resolve, reject) => {
+              videoSourceBuffer.addEventListener('updateend', resolve);
+              const buf = await res.arrayBuffer();
+              videoSourceBuffer.appendBuffer(buf);
+            });
+          }
+        );
+
+        Promise.all([ap, vp]).then(() => {
+          mediaSource.endOfStream();
+        });
+      }
+    </script>
+  </body>
+</html>
