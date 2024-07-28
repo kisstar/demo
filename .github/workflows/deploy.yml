@@ -23,7 +23,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: pages
+          folder: dist
           token: ${{ secrets.ACCESS_TOKEN }}
           git-config-name: kisstar
           git-config-email: dwh.chn@foxmail.com
