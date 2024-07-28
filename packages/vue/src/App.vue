@@ -1,7 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import DemoList from './components/demo-list.vue';
+</script>
 
 <template>
-  <div>Hello World!</div>
+  <demo-list />
 </template>
 
 <style scoped></style>
