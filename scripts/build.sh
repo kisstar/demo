@@ -13,6 +13,5 @@ npm run build
 # 复制静态资源
 cd $work_dir
 cp -r packages/vue/dist dist
-ls -l dist
 cp -r pages/ dist/
 ls -l dist
