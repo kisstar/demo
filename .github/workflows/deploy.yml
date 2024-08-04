@@ -19,11 +19,15 @@ jobs:
         with:
           node-version: 16.x
 
+      - name: Builds the app for production
+        run: |
+          sh ./scripts/build.sh
+
       - name: Deploy with gh-pages for GitHub
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: dist
           token: ${{ secrets.ACCESS_TOKEN }}
-          git-config-name: kisstar
+          git-config-name: Kisstar
           git-config-email: dwh.chn@foxmail.com

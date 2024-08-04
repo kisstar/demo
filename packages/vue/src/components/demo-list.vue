@@ -4,6 +4,7 @@ import { ALL_DEMOS } from '../config/demos';
 
 <template>
   <div class="container">
+    <h1 class="d-flex m-4">项目案例</h1>
     <ul class="my-4">
       <li class="d-flex" v-for="item in ALL_DEMOS">
         <div class="categroy py-1">{{ item.name }}</div>
