@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>本地预览</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.0-beta3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="container">
+    <div class="mt-2">
+      <div class="mb-3">
+        <label for="selectImage" class="form-label">请选择一张本地图片：</label>
+        <input
+          type="file"
+          id="selectImage"
+          class="form-control"
+          accept="image/*"
+        />
+      </div>
+      <img src="" class="rounded mx-auto d-block" />
+    </div>
+    <script>
+      document.querySelector('input').addEventListener('change', (e) => {
+        // 通过 input[type=file] 选取本地文件
+        const fileList = e.target.files;
+        const file = fileList[0];
+        // 使用 FileReader 读取文件对象
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+          const imgUrl = event.target.result;
+          // 此处得到的 base64 的地址可直接提供过 img 标签进行加载预览
+
+          document.querySelector('img').src = imgUrl;
+        };
+        // 把文件对象作为一个 dataURL
+        reader.readAsDataURL(file);
+      });
+    </script>
+  </body>
+</html>

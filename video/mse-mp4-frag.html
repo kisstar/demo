@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>MSE play MP4 fragments | Web API</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+  </head>
+
+  <body>
+    <video controls></video>
+
+    <script src="https://gpac.github.io/mp4box.js/dist/mp4box.all.js"></script>
+    <script>
+      const video = document.querySelector('video');
+      const mp4File = MP4Box.createFile();
+      const mediaSource = new MediaSource();
+
+      video.src = URL.createObjectURL(mediaSource);
+      mediaSource.addEventListener('sourceopen', sourceOpen);
+
+      function sourceOpen() {
+        fetch('https://kisstar.github.io/fs/video/the-degenerate/7474/1').then(
+          async (res) => {
+            const buf = await res.arrayBuffer();
+
+            buf.fileStart = 0;
+            mp4File.appendBuffer(buf, true);
+            mp4File.flush();
+          }
+        );
+      }
+
+      mp4File.onReady = (fileInfo) => {
+        mediaSource.duration = fileInfo.duration / fileInfo.timescale;
+        fileInfo.tracks.forEach((track) => {
+          const mime = `video/mp4; codecs="${track.codec}"`;
+          const sourceBuffer = mediaSource.addSourceBuffer(mime);
+
+          sourceBuffer.pendingAppends = [];
+          sourceBuffer.addEventListener('updateend', () => {
+            if (
+              sourceBuffer.updating === false &&
+              sourceBuffer.pendingAppends.length > 0
+            ) {
+              const { buffer, isEnd } = sourceBuffer.pendingAppends.shift();
+
+              sourceBuffer.appendBuffer(buffer);
+              sourceBuffer.isEnd = isEnd;
+            }
+            if (
+              mediaSource.readyState === 'open' &&
+              sourceBuffer.updating === false &&
+              sourceBuffer.isEnd
+            ) {
+              mediaSource.endOfStream();
+            }
+          });
+          mp4File.setSegmentOptions(track.id, sourceBuffer);
+        });
+
+        const initSegs = mp4File.initializeSegmentation();
+
+        initSegs.forEach(({ user, buffer }) => user.appendBuffer(buffer));
+        mp4File.start();
+      };
+
+      mp4File.onSegment = function (id, user, buffer, sampleNum, isEnd) {
+        user.pendingAppends.push({ id, buffer, sampleNum, isEnd });
+      };
+    </script>
+  </body>
+</html>

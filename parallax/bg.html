@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>视差滚动-固定背景</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .parallax-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+        font-size: 96px;
+        font-style: italic;
+        color: #fff;
+      }
+
+      .parallax-item:nth-child(odd) {
+        background-size: 100% 100%;
+        background-attachment: fixed; /* 核心代码 */
+      }
+
+      .parallax-item:nth-child(1) {
+        background-image: url(../public/images/parallax/evie-s-xy.jpg);
+      }
+
+      .parallax-item:nth-child(2) {
+        background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+      }
+
+      .parallax-item:nth-child(3) {
+        background-image: url(../public/images/parallax/evie-s-kq.jpg);
+      }
+
+      .parallax-item:nth-child(4) {
+        background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="parallax-container">
+      <section class="parallax-item">1</section>
+      <section class="parallax-item">2</section>
+      <section class="parallax-item">3</section>
+      <section class="parallax-item">4</section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>视差滚动-Scroll 事件</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        scroll-behavior: smooth;
+      }
+
+      .parallax-container {
+        position: relative;
+        height: 300vh;
+      }
+
+      .parallax-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 96px;
+        font-style: italic;
+        color: #fff;
+      }
+
+      .parallax-item:nth-child(1) {
+        position: absolute;
+        top: 650px;
+        left: 15%;
+        width: 200px;
+        height: 200px;
+        background-color: red;
+      }
+
+      .parallax-item:nth-child(2) {
+        position: absolute;
+        top: 550px;
+        left: 35%;
+        width: 300px;
+        height: 300px;
+        background-color: green;
+      }
+
+      .parallax-item:nth-child(3) {
+        position: absolute;
+        top: 720px;
+        left: 55%;
+        width: 400px;
+        height: 400px;
+        background-color: blue;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="parallax-container">
+      <section class="parallax-item">1</section>
+      <section class="parallax-item">2</section>
+      <section class="parallax-item">3</section>
+    </main>
+
+    <script>
+      function throttle(fn) {
+        let ticking = false;
+
+        return function(e) {
+          if (!ticking) {
+            requestAnimationFrame(function() {
+              fn(e);
+              ticking = false;
+            });
+
+            ticking = true;
+          }
+        };
+      }
+
+      function $(selector) {
+        return document.querySelector(selector);
+      }
+
+      const parallaxOne = $('.parallax-item:nth-child(1)');
+      const parallaxTwo = $('.parallax-item:nth-child(2)');
+      const parallaxThreen = $('.parallax-item:nth-child(3)');
+      const initTopOne = parseInt(getComputedStyle(parallaxOne).top);
+      const initTopTwo = parseInt(getComputedStyle(parallaxTwo).top);
+      const initTopThree = parseInt(getComputedStyle(parallaxThreen).top);
+
+      function render() {
+        const scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop;
+
+        parallaxOne.style.top = `${initTopOne + scrollTop * 0.6}px`;
+        parallaxTwo.style.top = `${initTopTwo + scrollTop * 0.4}px`;
+        parallaxThreen.style.top = `${initTopThree + scrollTop * 0.2}px`;
+      }
+
+      addEventListener('scroll', throttle(render));
+    </script>
+  </body>
+</html>

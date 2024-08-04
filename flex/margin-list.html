@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>List | Flex</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .list {
+        display: flex;
+        flex-wrap: wrap;
+        /* 解决首列多余的边距 */
+        margin-left: -24px;
+      }
+
+      .list-item {
+        margin-top: 24px;
+        margin-left: 24px;
+        width: 30%;
+        height: 100px;
+        background-color: antiquewhite;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="list">
+      <div class="list-item"></div>
+      <div class="list-item"></div>
+      <div class="list-item"></div>
+      <div class="list-item"></div>
+      <div class="list-item"></div>
+      <div class="list-item"></div>
+      <div class="list-item"></div>
+      <div class="list-item"></div>
+    </div>
+  </body>
+</html>
