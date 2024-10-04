@@ -4,7 +4,7 @@
   "description": "记录和展示一些示例代码",
   "main": "index.js",
   "scripts": {
-    "deploy": "gh-pages -d pages",
+    "deploy": "gh-pages -d dist",
     "prepare": "husky install",
     "commit": "git-cz"
   },
